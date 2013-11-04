@@ -19,41 +19,53 @@ from  os import system
 # Location of zotero folder must be set by the user
 ZOTERO_LOCATION =  ".mozilla/firefox/i1thdo2f.Capes/zotero/"
 
+
 # Paths
 HOME = os.path.expanduser("~/")
-PATH= HOME + ZOTERO_LOCATION 
-STORAGE_PATH= PATH + "storage/"
+#PATH= HOME + ZOTERO_LOCATION 
+#STORAGE_PATH= PATH + "storage/"
 
-#DATABASE="/home/caio/zotero2.sqlite"
+
+PATH= HOME + "zotero-server/"
+
+print PATH
 
 #  Create a copy of zotero database due to lock issues.
 #
 DATABASE1=  PATH + "zotero.sqlite"
-DATABASE2 = PATH + "zotero2.sqlite"
+DATABASE2 = PATH + "zotero.sqlite"
 
-system("cp " + DATABASE1 + " " +  DATABASE2 )
+print DATABASE2
 
+#system("cp " + DATABASE1 + " " +  DATABASE2 )
 
-# Connect to database file
-conn= sq.connect(DATABASE2,timeout=10)
-cur = conn.cursor()
-
-
-sql =  """
-      SELECT items.itemID,  items.key,  itemAttachments.path 
-      FROM items, itemAttachments 
-      WHERE  itemAttachments.itemID = items.itemID   
-      ORDER BY items.itemID ASC    
-
-       """
+global conn
+global cur
 
 
-def create_itemName_view():
+def open_database(database):
+    """
+    First function of this module that needs to be executed
+    open a connection to zotero database
+
+    """
+    global conn
+    global cur
+
+    
+    # Connect to database file
+    conn= sq.connect(database,timeout=10)
+    cur = conn.cursor()
+   
+
+
+
+def create_itemName_view(): 
     """
     Create viw:  item_names
 
     """
-
+    
     sql = """
        CREATE VIEW item_names AS 
 
@@ -64,12 +76,12 @@ def create_itemName_view():
         ORDER BY  itemID    
 
     """
-        query=cur.execute(sql)   
+    query=cur.execute(sql)   
 
 
 
 
-create_itemName_view();
+#create_itemName_view();
 
 
 def  get_tags():
@@ -168,7 +180,7 @@ def list_items():
 
 
 def filter_tag(tagid):
-    """
+       """
        Filter item by tags
        """
 
@@ -204,7 +216,7 @@ def get_item_data(itemid):
 
     """
     query=cur.execute(sql,(itemid,))   
-        rows=query.fetchall()
+    rows=query.fetchall()
 
     for row in rows:
         data_type , value = row
@@ -214,14 +226,14 @@ def get_item_data(itemid):
 
 def get_item_attachment(itemid):
     sql = """
-        SELECT    items.key, itemAttachments.path 
+    SELECT    items.key, itemAttachments.path 
     FROM      items,     itemAttachments
     WHERE   items.itemID = itemAttachments.itemID AND items.itemID = ?
     ORDER BY items.itemID  
     ;    
     """
-        query=cur.execute(sql,(itemid,))   
-        row=query.fetchall()
+    query=cur.execute(sql,(itemid,))
+    row=query.fetchall()
 
     #print row
 
@@ -237,4 +249,12 @@ def get_item_attachment(itemid):
 
 # Close database connection
 #conn.close()
+
+if __name__=="__main__":
+    print "Testing"
+
+    open_database(DATABASE2);
+    list_items();
+ 
+
 
