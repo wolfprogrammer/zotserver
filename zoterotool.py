@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 
 """
 Module to extract data from Zotero database
@@ -10,23 +10,23 @@ data to external applications.
 
 
 """
+#from __future__ import unicode_literals    
 
 import sqlite3 as sq
 import os.path
 from  os.path import isfile  
 from  os import system
 
+
 # Location of zotero folder must be set by the user
 ZOTERO_LOCATION =  ".mozilla/firefox/i1thdo2f.Capes/zotero/"
 
 
+
 # Paths
 HOME = os.path.expanduser("~/")
-#PATH= HOME + ZOTERO_LOCATION 
-#STORAGE_PATH= PATH + "storage/"
-
-
 PATH= HOME + "zotero-server/"
+STORAGE_PATH= PATH + "storage/"
 
 print PATH
 
@@ -155,9 +155,11 @@ def list_collections():
         print str(tagID) + "\t" + tag
 
 
-def list_items():
+def get_items():
     """
-    List all items in zotero library
+    Get all items in zotero library
+
+    
 
     """
 
@@ -173,9 +175,21 @@ def list_items():
     query=cur.execute(sql)  
     rows=query.fetchall()
 
+    return rows
+
+
+def list_items():
+    """
+    Print all items in zotero library.
+
+    """
+
+    
+    rows = get_items()
+
     for row in rows:
-        tagID, tag = row
-        print str(tagID) + "\t" + tag
+        itemID , itemName = row
+        print str(itemID) + "\t" + itemName
 
 
 
@@ -239,22 +253,35 @@ def get_item_attachment(itemid):
 
     if len(row) != 0:
         dirr, name = row[0]
-        name = name.split("storage:")[1]
 
-        ffile = STORAGE_PATH + dirr + "/" + name
+        print type(dirr)
+        print type (name)
+
+        if name is not None:
+            name = name.split("storage:")[1]
+        else:
+            return -1
+        
+        if dirr is not None:
+            ffile = STORAGE_PATH + dirr + "/" + name
+        else:
+            return -1
+
         return ffile
 
-    return -1 
+
+
+
 
 
 # Close database connection
 #conn.close()
 
 if __name__=="__main__":
+
     print "Testing"
 
     open_database(DATABASE2);
     list_items();
- 
 
 
