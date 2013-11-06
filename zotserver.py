@@ -26,7 +26,7 @@ open_database(DATABASE2);
 
 
 
-def create_url(url,name,conf=0):
+def link_tpl(url,name,conf=0):
     """
     Create html link code to URL
     Returns the html code to the link
@@ -47,16 +47,28 @@ def create_url(url,name,conf=0):
 
 def get_item_link(itemid):
     """
-    Returns a html link to the file
+    Returns a html link to the file, given the fileID
 
     """
     # Get item attachment path
-    path =  get_item_attachment(itemid)
+    #path =  get_item_attachment(itemid)
+    path =  get_attachment(itemid)
  
-    
-    path = os.path.join("/files", path)
-    link = '<a href="' + path + '">' + "file" + "</a>"
-    return link
+    if path is not None:
+        #path = os.path.join("/files", path)
+        #path = "/files" + path
+
+        name = os.path.split(path)[1]        
+        link = link_tpl( path, name,1 )
+        print link
+
+
+        #link = '<a href="' + path + '">' + "file" + "</a>"
+
+
+        return link    
+
+    return None
 
 
 
@@ -73,7 +85,7 @@ def print_all_links():
         path =  get_item_attachment(itemId)
         if path is not None and path != -1 :
             print "path = " +  path
-            link = create_url(path,itemName,1)
+            link = link_tpl(path,itemName,1)
 
             linklist= linklist + link + "\n " + "<br />"
             print link
@@ -84,10 +96,86 @@ def print_all_links():
 
 @route('/')
 def index():
+    return link_tpl("/items","All zotero collection items")
+
+
+
+
+@route('/items')
+def all_items():
+    """
+    In this page all Zotero collection
+    items are printed with a download 
+    link.
+
+    """
 
     links =  print_all_links()
     return links
           
+
+@route('/collections')
+def all_collections():
+    """
+    Show the user all Zotero collections 
+    with a link to the items in the collections
+
+    Page code
+    ---------
+    link-to-collection-id1    http://site-host/collectionid/id1
+    link-to-collection-id2 :  http://site-host/collectionid/id2
+    ...
+    ...
+
+    """
+
+    collections = get_collections()
+
+    html = ""
+
+    
+    for coll in collections:
+        collid, collname = coll
+
+        print "collid " + str(collid)
+        
+        url   = "/collectionid/" + str(collid)
+        link  = link_tpl(url,collname)
+
+        html = html + link + "<br />\n"
+
+    return html
+        
+
+@route('/collectionid/<collid:int>')
+def show_collection(collid):
+
+    itemIDs= get_item_from_collections(collid)
+
+    print itemIDs
+
+    type(itemIDs)
+
+    html = ""
+
+    print "show_collection Debug Trace ----------__"
+
+    for itemid in itemIDs:
+
+        link = get_item_link(itemid)
+
+
+        if link is not None:
+            html = html + link + "<br />\n"
+
+            print "link " + link
+            print "itemid " + str(itemid)
+
+
+#    return "The collection was: %s" % str(collid)
+
+    return html
+
 
 
 @route('/files/<path:path>')
@@ -111,6 +199,7 @@ def callback(path):
 
 
 # Run the server 
-run(host=HOST, port=PORT, debug=DEBUG, reloader=True)   
+if __name__=="__main__":     
+    run(host=HOST, port=PORT, debug=DEBUG, reloader=True)   
           
 

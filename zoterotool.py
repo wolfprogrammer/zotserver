@@ -124,6 +124,54 @@ def get_collections():
     return rows
 
 
+def get_collections_items():
+    """
+    Get all items from all collections.
+
+    Returns [ collectionDI, collectionName, colllectionItem ]
+
+    """
+
+    sql= """
+    SELECT collections.collectionID,  collections.collectionName,  collectionItems.itemID 
+    FROM collections, collectionItems
+    WHERE  collections.collectionID =  collectionItems.collectionID    ;
+    """
+
+    query = cur.execute(sql)
+    rows = query.fetchall()
+    return rows
+
+
+
+def get_item_from_collections( collid ):
+    """
+    Return list of all itemID from some collection, 
+    given the collectionID
+
+    """
+
+    sql= """
+    SELECT  collectionItems.itemID 
+    FROM collections, collectionItems
+    WHERE      collections.collectionID =  collectionItems.collectionID 
+           AND collectionItems.collectionID = ? ;       
+    """                        
+
+    query=cur.execute(sql,(collid,))        
+    rows=query.fetchall()       
+
+    itemids = [ ]
+
+
+    for row in rows:
+        itemid = row[0]
+        itemids = itemids + [itemid]
+
+    return itemids
+
+
+
 
 def list_tags():
     """
@@ -151,8 +199,8 @@ def list_collections():
     rows = get_collections()
 
     for row in rows:
-        tagID, tag = row
-        print str(tagID) + "\t" + tag
+        collID, collection = row
+        print str(collID) + "\t" + collection
 
 
 def get_items():
@@ -216,6 +264,9 @@ def filter_tag(tagid):
        print rows
 
 
+
+
+
 def get_item_data(itemid):
 
     sql = """
@@ -232,9 +283,16 @@ def get_item_data(itemid):
     query=cur.execute(sql,(itemid,))   
     rows=query.fetchall()
 
+    return rows
+
+
+def list_item_data(itemid):
+
+    rows = get_item_data(itemid)
+
     for row in rows:
         data_type , value = row
-        print str(data_type) + "\t\t" + str(value) + "\n"
+        print data_type + "\t\t" + value + "\n"
 
 
 
@@ -249,7 +307,7 @@ def get_item_attachment(itemid):
     query=cur.execute(sql,(itemid,))
     row=query.fetchall()
 
-    #print row
+    print row
 
     if len(row) != 0:
         dirr, name = row[0]
@@ -259,15 +317,85 @@ def get_item_attachment(itemid):
 
         if name is not None:
             name = name.split("storage:")[1]
+
+            print "trace 1"
         else:
+            print "trace2"
             return -1
         
         if dirr is not None:
+            print "trace 3"
             ffile = STORAGE_PATH + dirr + "/" + name
         else:
             return -1
 
         return ffile
+
+
+
+def get_attachment(itemid):
+    
+    sql= """ 
+    SELECT * FROM (
+    SELECT items.itemID,  items.key, itemAttachments.path,  itemAttachments.mimeType, itemDataValues.value
+    FROM items
+    LEFT JOIN itemAttachments 
+    ON itemAttachments.itemID = items.itemID   
+    LEFT JOIN itemData
+    ON  itemData.itemID = items.itemID  AND itemData.fieldID=110
+    LEFT JOIN itemDataValues 
+    ON itemDataValues.valueID = itemData.valueID
+    ORDER BY items.itemID 
+    )
+    WHERE itemID > 1 AND itemID = ? ;
+
+    """
+
+    query = cur.execute(sql,(itemid,))
+    rows = query.fetchall()
+
+    #print rows
+
+    if rows == []:
+        return None
+
+    data = rows[0]
+
+    key  = data[1]
+
+    path = data[2]
+
+    mtype = data[3]
+
+    title = data[4]
+
+    #if name is None:
+
+    #    print "tr1"
+    #    return None
+
+    if title is None:
+        return None
+
+    if path is None:
+#        print "tr2"
+
+        data2= get_attachment(itemid+1);
+#        print "data2 ="
+#        print data2
+        return data2
+
+    #print "tr3"
+
+    fname = path.split("storage:")[1]
+    PATH = os.path.join(STORAGE_PATH, key,fname)
+    #print PATH
+
+    return PATH
+                                  
+
+
+
 
 
 
