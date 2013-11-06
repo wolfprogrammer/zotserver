@@ -37,12 +37,9 @@ def create_url(url,name,conf=0):
     """
 
     if conf ==1:
-         #url= os.path.join("/files", url)
          url="/files" + url
 
     link = '<a href="' + url + '">' + name + '</a>'  
-#    print link
-
     return link
     
 
@@ -59,7 +56,6 @@ def get_item_link(itemid):
     
     path = os.path.join("/files", path)
     link = '<a href="' + path + '">' + "file" + "</a>"
-    #print link 
     return link
 
 
@@ -89,37 +85,9 @@ def print_all_links():
 @route('/')
 def index():
 
-    #return '<a href="/static/8_IAPM_final.pdf">filename</a>'
-
-#    return '<a   href="/static/../../zotero-server/storage/FK9M5HDF/8_IAPM_final.pdf">file</a>'
-
     links =  print_all_links()
     return links
-#    return get_item_link(243)
           
-
-
-@route('/download/:filename')
-def download(filename):
-    pwd = os.getcwd()
-
-    print filename
-    return static_file(filename, root=pwd, download=filename)    
-
-
-@route('/staticxx/:filename')
-def server_static(filename):
-    pwd = os.getcwd()
-
-
-    if os.path.isfile( filename):
-        path, basename = os.path.split(filename)
-    else:
-        abort(401, "Error: File not found in the server")
-
-#    return " %s %s %s  " % ( filename , path, basename )
-    return static_file(basename, root=path)
-
 
 
 @route('/files/<path:path>')
@@ -140,31 +108,6 @@ def callback(path):
     else:
         return "Error: File don't exist on server."
 
-
-
-#    return  path     
-
-
-
-#@route('/static/<url:re:.+>:') 
-#@route('/static/:<url>') 
-@route('/staticy/:filename#.*#')    
-def sever_file(filename):
-    print filename ; 
-    pwd = os.getcwd()
-
-
-    if os.path.isfile( filename ):
-        path, basename = os.path.split(filename)
-        print "path " + path
-        print "basename =" + basename
-    else:
-        print "Error"
-        abort(401, "Error: File not found in the server")
-
-#    return " %s %s %s  " % ( filename , path, basename )
-    return static_file(basename, root=path, download=basename)
- 
 
 
 # Run the server 
