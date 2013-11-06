@@ -109,6 +109,45 @@ def  get_tags():
 
 
 
+def get_tagname(tagid):
+    
+    sql= """
+    SELECT name  
+    FROM  tags
+    WHERE tagid = ?    
+    ; 
+    """
+
+    query=cur.execute(sql,(tagid,))  
+    rows=query.fetchall()
+
+    if rows != []:
+        rows = rows[0]
+        rows = rows[0]
+        return rows 
+
+    return []
+
+def get_collection_name(collid):
+    
+    sql= """
+    SELECT collectionName  
+    FROM  collections
+    WHERE collectionID = ?    
+    ; 
+    """
+
+    query=cur.execute(sql,(collid,))  
+    rows=query.fetchall()
+
+    if rows != []:
+        rows = rows[0]
+        rows = rows[0]
+        return rows 
+
+    return []
+                     
+
 def get_collections():
     """
     Get all collections and return in a list

@@ -10,8 +10,8 @@ Module program description
 
 PORT=8080	#: Sets the default port
 
-#HOST='0.0.0.0'  #: Accept anyhost  
-HOST='127.0.0.1' # Local host only
+HOST='0.0.0.0'  #: Accept anyhost  
+#HOST='127.0.0.1' # Local host only
 
 #DEBUG= True     #: True - Debug ON
 DEBUG= False
@@ -19,13 +19,16 @@ DEBUG= False
 
 from bottle import static_file, abort
 from bottle import route, run, debug
-from bottle import template, request, post, get
+from bottle import template, request, response, post, get
 from bottle import validate, static_file      
 
 from  zoterotool import *
 
 
 open_database(DATABASE2);
+
+
+
 
 
 
@@ -97,9 +100,39 @@ def print_all_links():
 
 
 
+def link_list_tpl ( url_list ):
+    """
+    Generates a html code of a  list of links 
+    given a list of URL
+
+    url_list = [ [ "URL1", "Description1"] , [ "URL2", "description2" ] .... ]
+
+    """
+
+    html = ""
+
+    for url_ in url_list:
+
+        url, name = url_
+        link = link_tpl(url, name)
+        html = html + "*" + link  + "<br />\n"
+
+    return html
+
+
+@route('/index')
 @route('/')
-def index():
-    return link_tpl("/items","All zotero collection items")
+def index():  
+
+    link_list   =  link_list_tpl( [ \
+            [ "/items", "Items" ] ,\
+            [ "/tags", "Tags" ],\
+            [ "/collections", "Collections" ] ] )
+
+
+    return template("base.html", subtitle="Options:", content= link_list, backlink = "index" )
+
+#    return link_tpl("/items","All zotero collection items")
 
 
 
@@ -114,7 +147,8 @@ def all_items():
     """
 
     links =  print_all_links()
-    return links
+    return template("base.html", subtitle="Items", content= links, backlink="index" )
+#    return links
           
 
 @route('/collections')
@@ -147,13 +181,19 @@ def all_collections():
 
         html = html + link + "<br />\n"
 
-    return html
+
+#   links =  print_all_links()
+    return template("base.html", subtitle="Collections", content= html, backlink="index" )  
+#    return html
         
 
 
 
 @route('/collectionid/<collid:int>')
 def show_collection(collid):
+
+
+    collname = get_collection_name(collid)
 
     itemIDs= get_item_from_collections(collid)
 
@@ -175,8 +215,8 @@ def show_collection(collid):
             #print "link " + link
             #print "itemid " + str(itemid)
 
-#    return "The collection was: %s" % str(collid)
-    return html
+    subtilte_ = "Collection: " + collname
+    return template("base.html", subtitle= subtilte_ , content= html, backlink="collections" )   
 
 
 @route('/fileid/<itemid:int>')
@@ -243,15 +283,17 @@ def show_tags():
         html = html + link + "<br />\n"
 
 
-    return html
+    return template("base.html", subtitle="Tags", content= html, backlink="index" )  
+#    return html
 
 
 @route('/tagid/<tagid:int>')
 def show_tagid(tagid):
 
+    tagname = get_tagname(tagid)
+
     itemIDs = filter_tag(tagid)
 
-    #print itemIDs
 
     html = ""
     for itemid in itemIDs:
@@ -262,11 +304,16 @@ def show_tagid(tagid):
         if link is not None:
             html = html + link + "<br />\n"
 
-            #print "link " + link
-            #print "itemid " + str(itemid)
+    subtilte_ = "Tag: " + tagname
+    return template("base.html", subtitle= subtilte_ , content= html, backlink="tags" ) 
 
-#    return "The collection was: %s" % str(collid)
-    return html                                         
+
+@route("/top")
+def top():
+    import subprocess
+    
+    response.content_type = "text/plain"
+    return subprocess.check_output(["top", "-bn", "1"])
 
 
 # Run the server 
