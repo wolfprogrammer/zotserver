@@ -147,6 +147,8 @@ def all_collections():
     return html
         
 
+
+
 @route('/collectionid/<collid:int>')
 def show_collection(collid):
 
@@ -171,12 +173,31 @@ def show_collection(collid):
             print "link " + link
             print "itemid " + str(itemid)
 
-
 #    return "The collection was: %s" % str(collid)
-
     return html
 
 
+@route('/fileid/<itemid:int>')
+def retrive_file(itemid):
+    """
+    Retrives file that matches itemid
+
+    """
+
+    path = get_attachment(itemid)
+    if path is not None:
+        path_, file_ = os.path.split(path)   
+
+        print path_
+        print file_
+
+        return static_file(file_, path_, download = file_ ) 
+#       return "File was  " + str(itemid) + " " + path
+    else:
+        return "Error: File not found"
+
+
+        
 
 @route('/files/<path:path>')
 def callback(path):
