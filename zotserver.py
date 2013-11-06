@@ -218,6 +218,31 @@ def callback(path):
         return "Error: File don't exist on server."
 
 
+@route('/tags')
+def show_tags():
+    """
+    In this page all tags are showed
+    when some tag is clicked only the files
+    related to this tag will be showed to the user
+    
+    """
+
+    html = ""
+
+    tags = get_tags()
+    for tag in tags:
+
+        tagid, tagname = tag
+
+        url =   "/tagid/" + str(tagid)
+        print url
+        link = link_tpl(url,tagname)
+
+        html = html + link + "<br />\n"
+
+
+    return html
+
 
 # Run the server 
 if __name__=="__main__":     
