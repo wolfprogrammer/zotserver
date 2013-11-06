@@ -28,14 +28,14 @@ HOME = os.path.expanduser("~/")
 PATH= HOME + "zotero-server/"
 STORAGE_PATH= PATH + "storage/"
 
-print PATH
+#print PATH
 
 #  Create a copy of zotero database due to lock issues.
 #
 DATABASE1=  PATH + "zotero.sqlite"
 DATABASE2 = PATH + "zotero.sqlite"
 
-print DATABASE2
+#print DATABASE2
 
 #system("cp " + DATABASE1 + " " +  DATABASE2 )
 
@@ -104,7 +104,7 @@ def  get_tags():
     rows=query.fetchall()
 
 
-    #print rows
+    ##print rows
     return rows
 
 
@@ -175,7 +175,7 @@ def get_item_from_collections( collid ):
 
 def list_tags():
     """
-    Print all zotero tags
+    #print all zotero tags
 
     @type  void
     @param void
@@ -186,13 +186,13 @@ def list_tags():
 
     for row in rows:
         tagID, tag = row
-        print str(tagID) + "\t" + tag
+        #print str(tagID) + "\t" + tag
 
 
 
 def list_collections():
     """
-    Print all Zotero collections
+    #print all Zotero collections
 
     """
 
@@ -200,7 +200,7 @@ def list_collections():
 
     for row in rows:
         collID, collection = row
-        print str(collID) + "\t" + collection
+        #print str(collID) + "\t" + collection
 
 
 def get_items():
@@ -228,7 +228,7 @@ def get_items():
 
 def list_items():
     """
-    Print all items in zotero library.
+    #print all items in zotero library.
 
     """
 
@@ -237,7 +237,7 @@ def list_items():
 
     for row in rows:
         itemID , itemName = row
-        print str(itemID) + "\t" + itemName
+        #print str(itemID) + "\t" + itemName
 
 
 
@@ -248,12 +248,9 @@ def filter_tag(tagid):
 
 
        sql = """
-       SELECT itemTags.itemID, item_names.value
-
-       FROM   itemTags, tags  , item_names
-
-       WHERE  itemTags.tagID = tags.tagID  AND  
-          item_names.itemID = itemTags.itemID AND tags.tagID= ?
+       SELECT itemTags.itemID  
+       FROM itemTags
+       WHERE itemTags.tagID = ?
        ;
 
        """
@@ -261,9 +258,15 @@ def filter_tag(tagid):
        query=cur.execute(sql,(tagid,))        
        rows=query.fetchall()
 
-       print rows
+       itemids = []
 
+       for row in rows:
+           itemid = row[0]
+           itemids = itemids + [itemid]
 
+       return itemids     
+
+        
 
 
 
@@ -292,7 +295,7 @@ def list_item_data(itemid):
 
     for row in rows:
         data_type , value = row
-        print data_type + "\t\t" + value + "\n"
+        #print data_type + "\t\t" + value + "\n"
 
 
 
@@ -307,24 +310,24 @@ def get_item_attachment(itemid):
     query=cur.execute(sql,(itemid,))
     row=query.fetchall()
 
-    print row
+    #print row
 
     if len(row) != 0:
         dirr, name = row[0]
 
-        print type(dirr)
-        print type (name)
+        #print type(dirr)
+        #print type (name)
 
         if name is not None:
             name = name.split("storage:")[1]
 
-            print "trace 1"
+            #print "trace 1"
         else:
-            print "trace2"
+            #print "trace2"
             return -1
         
         if dirr is not None:
-            print "trace 3"
+            #print "trace 3"
             ffile = STORAGE_PATH + dirr + "/" + name
         else:
             return -1
@@ -354,7 +357,7 @@ def get_attachment(itemid):
     query = cur.execute(sql,(itemid,))
     rows = query.fetchall()
 
-    #print rows
+    ##print rows
 
     if rows == []:
         return None
@@ -371,43 +374,35 @@ def get_attachment(itemid):
 
     #if name is None:
 
-    #    print "tr1"
+    #    #print "tr1"
     #    return None
 
     if title is None:
         return None
 
     if path is None:
-#        print "tr2"
+#        #print "tr2"
 
         data2= get_attachment(itemid+1);
-#        print "data2 ="
-#        print data2
+#        #print "data2 ="
+#        #print data2
         return data2
 
-    #print "tr3"
+    ##print "tr3"
 
     fname = path.split("storage:")[1]
     PATH = os.path.join(STORAGE_PATH, key,fname)
-    #print PATH
+    ##print PATH
 
     return PATH
                                   
-
-
-
-
-
-
-
-
 
 # Close database connection
 #conn.close()
 
 if __name__=="__main__":
 
-    print "Testing"
+    #print "Testing"
 
     open_database(DATABASE2);
     list_items();

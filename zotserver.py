@@ -9,9 +9,12 @@ Module program description
 """    
 
 PORT=8080	#: Sets the default port
-HOST='0.0.0.0'  #: Accept anyhost  
-DEBUG= True     #: True - Debug ON
-#HOST='0.0.0.1' # Local host only
+
+#HOST='0.0.0.0'  #: Accept anyhost  
+HOST='127.0.0.1' # Local host only
+
+#DEBUG= True     #: True - Debug ON
+DEBUG= False
 
 
 from bottle import static_file, abort
@@ -60,7 +63,7 @@ def get_item_link(itemid):
 
         name = os.path.split(path)[1]        
         link = link_tpl( path, name,1 )
-        print link
+        #print link
 
 
         #link = '<a href="' + path + '">' + "file" + "</a>"
@@ -79,16 +82,16 @@ def print_all_links():
 
     for item in items:
         itemId, itemName = item
-        print str(itemId) 
-        print itemName
+        #print str(itemId) 
+        #print itemName
       
         path =  get_item_attachment(itemId)
         if path is not None and path != -1 :
-            print "path = " +  path
+            #print "path = " +  path
             link = link_tpl(path,itemName,1)
 
             linklist= linklist + link + "\n " + "<br />"
-            print link
+            #print link
 
     return linklist
 
@@ -137,7 +140,7 @@ def all_collections():
     for coll in collections:
         collid, collname = coll
 
-        print "collid " + str(collid)
+        #print "collid " + str(collid)
         
         url   = "/collectionid/" + str(collid)
         link  = link_tpl(url,collname)
@@ -154,13 +157,12 @@ def show_collection(collid):
 
     itemIDs= get_item_from_collections(collid)
 
-    print itemIDs
+    #print itemIDs
 
-    type(itemIDs)
 
     html = ""
 
-    print "show_collection Debug Trace ----------__"
+    #print "show_collection Debug Trace ----------__"
 
     for itemid in itemIDs:
 
@@ -170,8 +172,8 @@ def show_collection(collid):
         if link is not None:
             html = html + link + "<br />\n"
 
-            print "link " + link
-            print "itemid " + str(itemid)
+            #print "link " + link
+            #print "itemid " + str(itemid)
 
 #    return "The collection was: %s" % str(collid)
     return html
@@ -188,8 +190,8 @@ def retrive_file(itemid):
     if path is not None:
         path_, file_ = os.path.split(path)   
 
-        print path_
-        print file_
+        #print path_
+        #print file_
 
         return static_file(file_, path_, download = file_ ) 
 #       return "File was  " + str(itemid) + " " + path
@@ -205,13 +207,13 @@ def callback(path):
     path=os.path.join("/",path)
 
 
-    print "path =" + path
+    #print "path =" + path
     if os.path.isfile( path ):
         path_, file_ = os.path.split(path)
 
-        print "retriving"
-        print "path " + path_
-        print "filename =" + file_
+        #print "retriving"
+        #print "path " + path_
+        #print "filename =" + file_
 
         return static_file(file_, path_ )
     else:
@@ -235,13 +237,36 @@ def show_tags():
         tagid, tagname = tag
 
         url =   "/tagid/" + str(tagid)
-        print url
+        #print url
         link = link_tpl(url,tagname)
 
         html = html + link + "<br />\n"
 
 
     return html
+
+
+@route('/tagid/<tagid:int>')
+def show_tagid(tagid):
+
+    itemIDs = filter_tag(tagid)
+
+    #print itemIDs
+
+    html = ""
+    for itemid in itemIDs:
+
+        link = get_item_link(itemid)
+
+
+        if link is not None:
+            html = html + link + "<br />\n"
+
+            #print "link " + link
+            #print "itemid " + str(itemid)
+
+#    return "The collection was: %s" % str(collid)
+    return html                                         
 
 
 # Run the server 
