@@ -10,14 +10,14 @@ Module program description
 
 PORT=8080	#: Sets the default port
 
-HOST='0.0.0.0'  #: Accept anyhost  
-#HOST='127.0.0.1' # Local host only
+#HOST='0.0.0.0'  #: Accept anyhost  
+HOST='127.0.0.1' # Local host only
 
 #DEBUG= True     #: True - Debug ON
 DEBUG= False
 
 
-from bottle import static_file, abort
+from bottle import static_file, abort, redirect
 from bottle import route, run, debug
 from bottle import template, request, response, post, get
 from bottle import validate, static_file      
@@ -25,11 +25,7 @@ from bottle import validate, static_file
 from  zoterotool import *
 
 
-open_database(DATABASE2);
-
-
-
-
+open_database("zotero.sqlite");
 
 
 def link_tpl(url,name,conf=0):
@@ -43,7 +39,7 @@ def link_tpl(url,name,conf=0):
     """
 
     if conf ==1:
-         url="/files" + url
+         url="/files/" + url
 
     link = '<a href="' + url + '">' + name + '</a>'  
     return link
@@ -130,9 +126,25 @@ def index():
             [ "/collections", "Collections" ] ] )
 
 
-    return template("base.html", subtitle="Options:", content= link_list, backlink = "index" )
+    button = '''
+    <br /><br />
+    <form action="/updatelib" method="post">    
+        <input value="Update Library" type="submit" />
+    </form>
+    '''                                             
+  
+    content_ =  link_list + button
+    return template("base.html", subtitle="Options:", content= content_ , backlink = "index" )
 
-#    return link_tpl("/items","All zotero collection items")
+
+@post('/updatelib')
+def updatelibrary():
+    global conn
+
+    os.system("./update-data.sh")
+    close_database()
+    open_database("zotero.sqlite");
+    redirect("/index")
 
 
 
@@ -244,16 +256,16 @@ def retrive_file(itemid):
 @route('/files/<path:path>')
 def callback(path):
 
-    path=os.path.join("/",path)
-
+    #path=os.path.join("/",path)
+    print path
 
     #print "path =" + path
     if os.path.isfile( path ):
         path_, file_ = os.path.split(path)
 
-        #print "retriving"
-        #print "path " + path_
-        #print "filename =" + file_
+        print "retriving"
+        print "path " + path_
+        print "filename =" + file_
 
         return static_file(file_, path_ )
     else:
@@ -314,6 +326,12 @@ def top():
     
     response.content_type = "text/plain"
     return subprocess.check_output(["top", "-bn", "1"])
+
+
+@get('/favicon.ico')
+def get_favicon():
+#    return server_static('favicon.ico')
+    return static_file('favicon.ico', "." )     
 
 
 # Run the server 

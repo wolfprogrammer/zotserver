@@ -22,20 +22,19 @@ from  os import system
 ZOTERO_LOCATION =  ".mozilla/firefox/i1thdo2f.Capes/zotero/"
 
 
-
+global HOME
+global STORAGE_PATH
 # Paths
-HOME = os.path.expanduser("~/")
-PATH= HOME + "zotero-server/"
-STORAGE_PATH= PATH + "storage/"
+#HOME = os.path.expanduser("~/")
+#PATH= HOME + "zotero-server/"
+STORAGE_PATH= "storage/"
 
 #print PATH
 
 #  Create a copy of zotero database due to lock issues.
 #
-DATABASE1=  PATH + "zotero.sqlite"
-DATABASE2 = PATH + "zotero.sqlite"
-
-#print DATABASE2
+#DATABASE2 = PATH + "zotero.sqlite"
+DATABASE2 =  "zotero.sqlite"
 
 #system("cp " + DATABASE1 + " " +  DATABASE2 )
 
@@ -57,7 +56,9 @@ def open_database(database):
     conn= sq.connect(database,timeout=10)
     cur = conn.cursor()
    
-
+def close_database():
+    conn.close()
+    return 0
 
 
 def create_itemName_view(): 
@@ -367,7 +368,9 @@ def get_item_attachment(itemid):
         
         if dirr is not None:
             #print "trace 3"
-            ffile = STORAGE_PATH + dirr + "/" + name
+            #ffile = STORAGE_PATH + dirr + "/" + name
+            ffile =  os.path.join(STORAGE_PATH,dirr,name)
+            print ffile
         else:
             return -1
 
@@ -444,6 +447,6 @@ if __name__=="__main__":
     #print "Testing"
 
     open_database(DATABASE2);
-    list_items();
+    #list_items();
 
 
