@@ -120,10 +120,12 @@ def link_list_tpl ( url_list ):
 @route('/')
 def index():  
 
-    link_list   =  link_list_tpl( [ \
-            [ "/items", "Items" ] ,\
-            [ "/tags", "Tags" ],\
-            [ "/collections", "Collections" ] ] )
+    link_list   =  link_list_tpl(\
+            [\
+            [ "/items", "Items"             ] ,\
+            [ "/tags", "Tags"               ] ,\
+            [ "/collections", "Collections" ] ,\
+            [ "/help","Help"                ] ])
 
 
     button = '''
@@ -326,6 +328,23 @@ def top():
     
     response.content_type = "text/plain"
     return subprocess.check_output(["top", "-bn", "1"])
+
+
+
+@route("/help")
+def help():
+
+    html = """
+    The ZOTERO SERVER - Is a http web server that uses bottle framework. <br />
+    This simple and lightweight web server allows to access the Zotero   <br />
+    data from anywhere, any device, tablet, smartphone, PC ...           <br />
+    
+
+    """
+
+    return template("base.html", subtitle= "HELP" , content= html , backlink="index" ) 
+
+
 
 
 @get('/favicon.ico')

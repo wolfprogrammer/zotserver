@@ -1,0 +1,10 @@
+/tags
+/.settings/org.eclipse.core.resources.prefs
+/..html
+scratch.py
+*.pyc
+storage/
+*.jpeg
+*.jpe
+*.sqlite
+*.png
