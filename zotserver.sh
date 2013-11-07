@@ -1,8 +1,12 @@
 #!/bin/bash
 #
+#  This script controls the zotero-server as a daemon.
 #
-ZOTSERVER_HOME="$HOME/zoterotool2"
-
+#  ZOTSERVER_HOME = Directory whre is the "zoteroserver.py"
+#
+#
+#ZOTSERVER_HOME="$HOME/zoterotool2"
+ZOTSERVER_HOME="$PWD"                # Current directory
 
 # Get the current script path
 _script="$(readlink -f ${BASH_SOURCE[0]})"
@@ -20,6 +24,7 @@ cd $ZOTSERVER_HOME
 STARTCMD="python  zotserver.py"
 LOGFILE="/tmp/zotserver.log" 
 PIDFILE="/tmp/zotserver.pid"
+#exit 0
 
 start() {
  echo "Starting Python Zotero Server on port 8080"
@@ -28,7 +33,7 @@ start() {
 	echo $! > $PIDFILE
 
 }
-stop() {
+stopp() {
 	echo "Stopping Zotero Server"
 	kill  `cat $PIDFILE`	
 	echo "Stopped .."  >  $LOGFILE
@@ -40,20 +45,32 @@ status() {
 
 }
 
+reload() {
+    echo "Reloading zotsever ..."
+    stopp   
+    sleep 5
+    start
+
+}
+
 
 case "$1" in
  start)
  start
  ;;
  stop)
- stop
+ stopp
  ;;
  status)
  status
  ;;
+ reload)
+ reload     
+ ;;
+
  *)
  echo "Python Zotero Server Daemon"       
- echo "Usage: track_ip_service {start|stop|status}"
+ echo "Usage: track_ip_service {start|stop|status|reload}"
  exit 1
  esac
 exit 0 

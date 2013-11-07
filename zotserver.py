@@ -149,13 +149,13 @@ def format_query(query):
 @route('/')
 def index():  
 
-    link_list   =  link_list_tpl(\
-            [\
-            [ "/items", "Items"             ] ,\
-            [ "/tags", "Tags"               ] ,\
-            [ "/collections", "Collections" ] ,\
-            [ "/status","Server Status"     ] ,\
-            [ "/help","Help"                ] ])
+    #link_list   =  link_list_tpl(\
+            #[\
+            #[ "/items", "Items"             ] ,\
+            #[ "/tags", "Tags"               ] ,\
+            #[ "/collections", "Collections" ] ,\
+            #[ "/status","Server Status"     ] ,\
+            #[ "/help","Help"                ] ])
     
     
     search_form = '''
@@ -173,7 +173,8 @@ def index():
     </form>
     '''                                             
   
-    content_ =  link_list + search_form + update_button
+#    content_ =  link_list + search_form + update_button
+    content_ =   search_form + update_button
     return template("base.html", subtitle="Options:", content= content_ , backlink = "index" )
 
 
@@ -413,7 +414,6 @@ def help():
 
 @get('/favicon.ico')
 def get_favicon():
-#    return server_static('favicon.ico')
     return static_file('favicon.ico', "." )     
 
 
