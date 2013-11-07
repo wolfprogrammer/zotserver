@@ -74,26 +74,6 @@ def get_item_link(itemid):
 
 
 
-def print_all_links():
-    items =  get_items()
-
-    linklist = ""
-
-    for item in items:
-        itemId, itemName = item
-        #print str(itemId) 
-        #print itemName
-      
-        path =  get_item_attachment(itemId)
-        if path is not None and path != -1 :
-            #print "path = " +  path
-            link = link_tpl(path,itemName,1)
-
-            linklist= linklist + link + "\n " + "<br />"
-            #print link
-
-    return linklist
-
 
 
 def link_list_tpl ( url_list ):
@@ -114,6 +94,32 @@ def link_list_tpl ( url_list ):
         html = html + "*" + link  + "<br />\n"
 
     return html
+
+
+def html_item_link_list( itemIDs ):
+    """
+    Creates a html code of link to the library Items,
+    given the item ID
+
+    Input: itemIDs:  list of integer values itemID
+
+    """
+    
+    html = ""
+    
+    for itemid in itemIDs:
+        
+        link = get_item_link(itemid)
+
+
+        if link is not None:
+            html = html + link + "<br />\n"
+
+    return html
+
+
+
+
 
 
 @route('/index')
@@ -146,6 +152,7 @@ def updatelibrary():
     os.system("./update-data.sh")
     close_database()
     open_database("zotero.sqlite");
+    create_text_index()
     redirect("/index")
 
 
@@ -159,10 +166,11 @@ def all_items():
     link.
 
     """
+    items =  get_item_ids()
 
-    links =  print_all_links()
-    return template("base.html", subtitle="Items", content= links, backlink="index" )
-#    return links
+    html = html_item_link_list( items )
+
+    return template("base.html", subtitle="Items", content= html , backlink="index" )
           
 
 @route('/collections')
@@ -196,9 +204,7 @@ def all_collections():
         html = html + link + "<br />\n"
 
 
-#   links =  print_all_links()
     return template("base.html", subtitle="Collections", content= html, backlink="index" )  
-#    return html
         
 
 
@@ -209,28 +215,13 @@ def show_collection(collid):
 
     collname = get_collection_name(collid)
 
-    itemIDs= get_item_from_collections(collid)
+    items = get_item_from_collections(collid)
 
-    #print itemIDs
-
-
-    html = ""
-
-    #print "show_collection Debug Trace ----------__"
-
-    for itemid in itemIDs:
-
-        link = get_item_link(itemid)
-
-
-        if link is not None:
-            html = html + link + "<br />\n"
-
-            #print "link " + link
-            #print "itemid " + str(itemid)
+    html = html_item_link_list( items )
 
     subtilte_ = "Collection: " + collname
     return template("base.html", subtitle= subtilte_ , content= html, backlink="collections" )   
+
 
 
 @route('/fileid/<itemid:int>')
@@ -305,21 +296,27 @@ def show_tags():
 def show_tagid(tagid):
 
     tagname = get_tagname(tagid)
-
-    itemIDs = filter_tag(tagid)
-
-
-    html = ""
-    for itemid in itemIDs:
-
-        link = get_item_link(itemid)
-
-
-        if link is not None:
-            html = html + link + "<br />\n"
+    items = filter_tag(tagid)
+    html = html_item_link_list( items )
+  
 
     subtilte_ = "Tag: " + tagname
     return template("base.html", subtitle= subtilte_ , content= html, backlink="tags" ) 
+
+
+@route('/query/<query>')
+def query_libray(query):
+    """
+    Full text search in the database
+
+    http://<base url>/search-expression
+
+    """
+
+#    itemids = text_search(query)
+#    html = html_item_link_list( itemids )
+#    return html
+    return query
 
 
 @route("/status")

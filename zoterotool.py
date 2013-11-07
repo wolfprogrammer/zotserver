@@ -55,10 +55,73 @@ def open_database(database):
     # Connect to database file
     conn= sq.connect(database,timeout=10)
     cur = conn.cursor()
-   
+
+
+
 def close_database():
     conn.close()
     return 0
+
+
+
+
+def create_text_index():
+    """
+    Creates the table: fulltxt, using the module FTS3
+    to allow full text search in the database
+
+    """
+
+    #  Create Virtual table fulltxt( wordID, Word, itemID
+    sql1 = """
+    CREATE VIRTUAL TABLE IF NOT EXISTS fulltxt USING FTS3  
+    ( 
+    wordID   INTEGER,
+    word     TEXT,
+    itemID   INTEGER
+    ) 
+    ;
+    """
+    
+    # Populate virtual table 
+    sql2 = """
+    INSERT     INTO fulltxt 
+    SELECT     fulltextWords.wordID, fulltextWords.word , fulltextItemWords.itemID
+    FROM       fulltextWords , fulltextItemWords
+    WHERE      fulltextWords.wordID = fulltextItemWords.wordID
+    ;
+    """
+    
+    cur.execute(sql1)   
+    cur.execute(sql2)
+    conn.commit()
+
+
+
+def text_search(text):
+
+    sql = """
+
+    SELECT   itemID FROM fulltxt 
+    WHERE  word MATCH ?
+    GROUP BY itemID
+
+    """
+
+    
+    itemids = [ ]
+
+    query=cur.execute(sql,(text,))   
+    rows =query.fetchall()
+
+#    print rows
+
+    for row in rows:
+        itemid = row[0]
+        itemids = itemids + [itemid]
+
+    return itemids           
+
 
 
 def create_itemName_view(): 
@@ -68,9 +131,9 @@ def create_itemName_view():
     """
     
     sql = """
-       CREATE VIEW item_names AS 
+        CREATE VIEW item_names AS 
 
-    SELECT DISTINCT itemData.itemID,  itemDataValues.value  
+        SELECT DISTINCT itemData.itemID,  itemDataValues.value  
         FROM      itemData, itemDataValues  , fields
         WHERE     itemData.valueID =  itemDataValues.valueID AND 
                   fields.fieldID = itemData.fieldID AND itemData.fieldID=110 
@@ -78,6 +141,7 @@ def create_itemName_view():
 
     """
     query=cur.execute(sql)   
+    conn.commit()
 
 
 
@@ -243,11 +307,34 @@ def list_collections():
         #print str(collID) + "\t" + collection
 
 
+def get_item_ids():
+    """
+    Return the itemID of all items
+    """
+
+    sql = """
+    SELECT itemID FROM items 
+    ORDER BY itemID
+    ;
+    """
+
+    itemids = [ ]
+
+    query=cur.execute(sql)   
+    rows =query.fetchall()
+
+#    print rows
+
+    for row in rows:
+        itemid = row[0]
+        itemids = itemids + [itemid]
+
+    return itemids         
+
+
 def get_items():
     """
     Get all items in zotero library
-
-    
 
     """
 
