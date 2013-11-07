@@ -10,8 +10,8 @@ Module program description
 
 PORT=8080	#: Sets the default port
 
-#HOST='0.0.0.0'  #: Accept anyhost  
-HOST='127.0.0.1' # Local host only
+HOST='0.0.0.0'  #: Accept anyhost  
+#HOST='127.0.0.1' # Local host only
 
 #DEBUG= True     #: True - Debug ON
 DEBUG= False
@@ -125,8 +125,8 @@ def index():
             [ "/items", "Items"             ] ,\
             [ "/tags", "Tags"               ] ,\
             [ "/collections", "Collections" ] ,\
+            [ "/status","Server Status"     ] ,\
             [ "/help","Help"                ] ])
-
 
     button = '''
     <br /><br />
@@ -259,15 +259,15 @@ def retrive_file(itemid):
 def callback(path):
 
     #path=os.path.join("/",path)
-    print path
+    #print path
 
     #print "path =" + path
     if os.path.isfile( path ):
         path_, file_ = os.path.split(path)
 
-        print "retriving"
-        print "path " + path_
-        print "filename =" + file_
+        #print "retriving"
+        #print "path " + path_
+        #print "filename =" + file_
 
         return static_file(file_, path_ )
     else:
@@ -322,12 +322,15 @@ def show_tagid(tagid):
     return template("base.html", subtitle= subtilte_ , content= html, backlink="tags" ) 
 
 
-@route("/top")
-def top():
+@route("/status")
+def status():
+    """
+    Shows the status of the server
+    """
     import subprocess
     
     response.content_type = "text/plain"
-    return subprocess.check_output(["top", "-bn", "1"])
+    return subprocess.check_output(["cat", "/tmp/zotserver.log"])
 
 
 
