@@ -28,20 +28,28 @@ from  zoterotool import *
 open_database("zotero.sqlite");
 
 
-def link_tpl(url,name,conf=0):
+def link_tpl(url,name, linktofile =False ,newtab=False):
     """
     Create html link code to URL
     Returns the html code to the link
 
-    conf=0 : Any link
-    conf=1 : Internal file
+    linktofile = False : Link to any page
+               = True  : Link to Internal file
+
+    newtab     = False : Open the links in same tab/window
+                 True  : Force to open links in new tab
 
     """
 
-    if conf ==1:
+    if linktofile == True:
          url="/files/" + url
 
-    link = '<a href="' + url + '">' + name + '</a>'  
+    targ = ""
+    if newtab == True:
+        targ = ' target="_blank" '
+
+
+    link = '<a href="' + url + '"' + targ + '>' + name + '</a>'  
     return link
     
 
@@ -61,7 +69,7 @@ def get_item_link(itemid):
         #path = "/files" + path
 
         name = os.path.split(path)[1]        
-        link = link_tpl( path, name,1 )
+        link = link_tpl( path, name, linktofile = True, newtab =True  )
         #print link
 
 
