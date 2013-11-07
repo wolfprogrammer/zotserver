@@ -119,6 +119,21 @@ def html_item_link_list( itemIDs ):
 
 
 
+def format_query(query):
+    """
+    Given    query=" word1 word2 word3
+    Returns  " word1 OR word2 OR word3"
+
+    """
+    words = query.split()
+#    print words
+
+    text = ""
+    for idx in range(len(words)-1):
+        text = text + words[idx] + " OR " 
+
+    text = text + words[-1]
+    return text               
 
 
 
@@ -133,15 +148,24 @@ def index():
             [ "/collections", "Collections" ] ,\
             [ "/status","Server Status"     ] ,\
             [ "/help","Help"                ] ])
+    
+    
+    search_form = '''
+    <br />
+    <form action="/search" method="GET">
+            Search Library <br /><input name="q" type="text" autofocus />
+            <input value="Search" type="submit" />
+        </form>
+    '''                           
 
-    button = '''
+    update_button = '''
     <br /><br />
     <form action="/updatelib" method="post">    
         <input value="Update Library" type="submit" />
     </form>
     '''                                             
   
-    content_ =  link_list + button
+    content_ =  link_list + search_form + update_button
     return template("base.html", subtitle="Options:", content= content_ , backlink = "index" )
 
 
@@ -304,19 +328,51 @@ def show_tagid(tagid):
     return template("base.html", subtitle= subtilte_ , content= html, backlink="tags" ) 
 
 
-@route('/query/<query>')
-def query_libray(query):
-    """
-    Full text search in the database
+#@route('/query')
+#def query_libray(query):
+    #"""
+    #Full text search in the database
 
-    http://<base url>/search-expression
+    #http://<base url>/search-expression
 
-    """
+    #"""
 
-#    itemids = text_search(query)
-#    html = html_item_link_list( itemids )
-#    return html
-    return query
+##    itemids = text_search(query)
+##    html = html_item_link_list( itemids )
+##    return html
+    #return query
+
+last_query = ""
+
+@route('/search')
+def search_library():
+    query = request.params.get('q')
+    last_query = query
+
+    query = format_query(query)
+
+    itemids = text_search(query)
+    html = html_item_link_list( itemids )
+
+    search_form = '''
+    <br />
+    <form action="/search" method="GET">
+            Search Library <br /><input name="q" type="text" value="%s" autofocus />
+            <input value="Search" type="submit" />
+        </form>
+    <br />            
+    '''           
+
+    search_form = search_form % ( last_query )            
+
+    content_ =   search_form + html
+    return template("base.html", subtitle="Search Library", content= content_ , backlink = "index" )
+          
+
+
+
+
+#   return 'Your query value was: {}'.format(query)
 
 
 @route("/status")
