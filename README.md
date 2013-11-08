@@ -10,19 +10,29 @@ in the network, PDAs ... Remote locations.
 This software can be useful to share couments, technical standards, references through internet, local network
 or any kind of file.
 
-Features:
+## Features
+
    1. Full text search in Zotero library
    2. Search by Tags
    3. Search by Collections
    4. Access your Zotero's Library in any Browser from everywhere
    
 
+## Description
+
 The server uses the following files:
   1. zotserver.py   -  Is the sever core application
-  2. zoterotool.pu  -  A tool to search the Ztero library
+  2. zoterotool.pu  -  A python library to read Zotero library metadata
   3. update-data.sh -  A bash script to get the Zotero Library data 
-                       In Linux:  ~/.mozilla/firefox/<profile>/zotero/storage
-                                  ~/.mozilla/firefox/<profile>/zotero/zotero.sqlite
+
+In Linux the data can be found in:
+   ~/.mozilla/firefox/<profile>/zotero/storage
+   ~/.mozilla/firefox/<profile>/zotero/zotero.sqlite
+
+In Windows it can be found in:
+C:\Documents and Settings\<username>\Application Data\Mozilla\Firefox\Profiles\<randomstring>\zotero  
+
+For more information see: http://www.zotero.org/support/zotero_data
     
   4. update-data-remote.sh - A bash script to get the Zotero Library data through rsync from where
                              the Zotero is installed.
