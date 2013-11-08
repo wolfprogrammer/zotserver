@@ -1,6 +1,11 @@
 /tags
 /.settings/org.eclipse.core.resources.prefs
-/..html
+./html/*
+html
+./doc
+*.bak
+references
+latex
 scratch.py
 *.pyc
 storage/
