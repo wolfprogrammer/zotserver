@@ -121,9 +121,28 @@ def html_item_link_list( itemIDs ):
 
 
         if link is not None:
-            html = html + link + "<br />\n"
+
+            html2 = item_data_html( itemid )
+            html = html + link + "<br />" + html2  +  "<br /><br />\n"
 
     return html
+
+
+
+def item_data_html( itemid ):
+    """
+    Returns item data in html format
+
+    """
+    data = get_item_data( itemid ) 
+
+    html = ""
+    
+    for dat  in data:
+        html = html +  "%s\t\t%s <br />\n " % ( dat[0], dat[1] )
+
+    return html
+
 
 
 
@@ -371,6 +390,8 @@ def search_library():
         </form>
     <br />            
     '''           
+
+
 
     search_form = search_form % ( last_query )            
 

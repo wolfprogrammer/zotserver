@@ -416,13 +416,14 @@ def get_item_data(itemid):
     return rows
 
 
+
 def list_item_data(itemid):
 
     rows = get_item_data(itemid)
 
     for row in rows:
         data_type , value = row
-        #print data_type + "\t\t" + value + "\n"
+        print data_type + "\t\t" + value + "\n"
 
 
 
