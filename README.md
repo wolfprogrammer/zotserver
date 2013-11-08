@@ -32,11 +32,12 @@ The server uses the following files:
 To the sever work only needs the Zotero data.  
 
 
-## Install
+## Install and Deployment
 There is only the need of python bottle framework and Zotero data.
 
-Local Setup
+### Local Setup
 
+```  bash
       cd
       git clone  https://github.com/wolfprogrammer/zotserver.git
       cd zotserver
@@ -45,16 +46,20 @@ Local Setup
       # edit the update-data.sh
       ./update-data.sh  # It will copy   zotero/storage and zotero/zotero.sqlite to the directory
                                          from this script is.
+```
+                                         
       
-Local Deployment
+### Local Deployment
+
+```  bash
      cd $HOME/zotserver
      ./zotserver.sh start
      The server will open on      
        *  http://localhost:8080                   : Accessing from local computer
        *  htpp://<server-ip or host name>:8080    : Accessing from somewhere
-                                  
+```                                  
      
-Remote Setup
+### Remote Setup
      The server can also be installed in a different machine from which Zotero is installed.
      
      
