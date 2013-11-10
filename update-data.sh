@@ -15,11 +15,11 @@ echo $ZOTERO_LOCATION
 echo $STORAGE_LOCATION
 
 
-ls $STORAGE_LOCATION
-mkdir -p  storage
+#ls $STORAGE_LOCATION
+#mkdir -p  storage
 
 # Copy zotero data to the server
-rsync -avP --delete $STORAGE_LOCATION/  storage
+#rsync -avP --delete $STORAGE_LOCATION/  storage
 
 # Copy zotero database
 rsync -avP $ZOTERO_LOCATION/zotero.sqlite  .

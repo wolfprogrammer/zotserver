@@ -1,0 +1,31 @@
+// dot 2.34.0 on Linux 3.11.6-1-ARCH
+// SchemaSpy rev 590
+digraph "fulltxt_segments" {
+  graph [
+    rankdir="RL"
+    bgcolor="#f7f7f7"
+    nodesep="0.18"
+    ranksep="0.46"
+    fontname="Helvetica"
+    fontsize="11"
+  ];
+  node [
+    fontname="Helvetica"
+    fontsize="11"
+    shape="plaintext"
+  ];
+  edge [
+    arrowsize="0.8"
+  ];
+  "fulltxt_segments" [
+    label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3" BGCOLOR="#9bab96" ALIGN="CENTER">fulltxt_segments</TD></TR>
+      <TR><TD PORT="blockid" COLSPAN="3" BGCOLOR="#bed1b8" ALIGN="LEFT">blockid</TD></TR>
+      <TR><TD PORT="block" COLSPAN="3" ALIGN="LEFT">block</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#f7f7f7">  </TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD><TD ALIGN="RIGHT" BGCOLOR="#f7f7f7">  </TD></TR>
+    </TABLE>>
+    URL="tables/fulltxt_segments.html"
+    tooltip="fulltxt_segments"
+  ];
+}
