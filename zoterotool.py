@@ -466,7 +466,7 @@ def get_item_attachment(itemid):
 
 
 
-def get_attachment(itemid):
+def get_attachment2(itemid):
     
     sql= """ 
     SELECT * FROM (
@@ -525,7 +525,60 @@ def get_attachment(itemid):
     ##print PATH
 
     return PATH
-                                  
+
+
+
+def get_attachment( itemid ):
+
+    sql = """
+    SELECT  path,  key FROM
+    (
+    SELECT  itemAttachments.itemID, itemAttachments.sourceItemID, itemAttachments.path , items.key
+    FROM itemAttachments, items
+    WHERE  itemAttachments.itemID  = items.itemID   
+    ) 
+    WHERE itemID= ?  OR sourceItemID = ? ;
+
+    """
+
+
+    query = cur.execute(sql,(itemid,itemid))
+    rows = query.fetchall()  
+
+    #print "item= " + str(itemid)
+    #print rows
+
+
+    if rows == []:
+        return None
+    else:
+
+        #print "------------"
+        path, key = rows[0]
+        #print itemid
+        #print "path = " + path 
+        #print "key = "  + key
+
+      
+
+        if path == None:
+            if len(rows) == 1:
+                return None 
+
+            path,key = rows[1]
+
+
+        fname = path.split("storage:")[1]
+
+        PATH = os.path.join(STORAGE_PATH, key,fname)
+
+        return PATH
+#    return rows
+
+
+
+
+
 
 # Close database connection
 #conn.close()
