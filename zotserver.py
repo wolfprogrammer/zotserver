@@ -438,8 +438,12 @@ def get_favicon():
     return static_file('favicon.ico', "." )     
 
 
+def main():
+    run(host=HOST, port=PORT, debug=DEBUG, reloader=True)   
+
+
 # Run the server 
 if __name__=="__main__":     
-    run(host=HOST, port=PORT, debug=DEBUG, reloader=True)   
+    main()
           
 

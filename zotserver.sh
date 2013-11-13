@@ -14,9 +14,12 @@ _script="$(readlink -f ${BASH_SOURCE[0]})"
 # Get the current script directory
 _base="$(dirname $_script)"
 
+BROWSER=firefox
 
 #echo $_script
 #echo $_base
+
+
 
 
 cd $ZOTSERVER_HOME
@@ -31,6 +34,7 @@ start() {
 
 	nohup $STARTCMD  2>&1 > $LOGFILE &
 	echo $! > $PIDFILE
+	$BROWSER localhost:8080
 
 }
 stopp() {
