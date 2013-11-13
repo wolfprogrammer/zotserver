@@ -129,6 +129,7 @@ def html_item_link_list( itemIDs ):
 
 
 
+
 def item_data_html( itemid ):
     """
     Returns item data in html format
@@ -161,6 +162,33 @@ def format_query(query):
 
     text = text + words[-1]
     return text               
+
+
+
+def html_collections_link(collections):
+    """
+    Return a html code of a collection 
+
+    collections_list = [ ( collIDd, collName ,) ... ]
+    [ (1 , "col1") , ( 4, "coll2" ) , ... ]
+
+    """
+
+
+    html = ""
+    for coll in collections:
+        collid, collname = coll
+
+    
+        url   = "/collectionid/" + str(collid)
+        link  = link_tpl(url,collname)
+
+        html = html + link + "<br />\n"
+
+    print html
+    return html
+
+
 
 
 
@@ -239,23 +267,12 @@ def all_collections():
     ...
 
     """
+    
 
     collections = get_collections()
 
-    html = ""
-
+    html = html_collections_link(collections)
     
-    for coll in collections:
-        collid, collname = coll
-
-        #print "collid " + str(collid)
-        
-        url   = "/collectionid/" + str(collid)
-        link  = link_tpl(url,collname)
-
-        html = html + link + "<br />\n"
-
-
     return template("base.html", subtitle="Collections", content= html, backlink="index" )  
         
 
@@ -265,11 +282,26 @@ def all_collections():
 def show_collection(collid):
 
 
+    # Find all subcollections from a given collecion 
+    # which  collID is known.
+    #
+    # subcollections =  [ ( collIDx, collNameX ), ( ....) ... ]
+    #
+    subcollections = get_subcollections(collid)
+    html_subcolls = html_collections_link(subcollections)
+
+
+
+
     collname = get_collection_name(collid)
 
     items = get_item_from_collections(collid)
 
-    html = html_item_link_list( items )
+    html_items = html_item_link_list( items )
+
+    
+    html =   html_subcolls +  
+    html =   html + html_items
 
     subtilte_ = "Collection: " + collname
     return template("base.html", subtitle= subtilte_ , content= html, backlink="collections" )   

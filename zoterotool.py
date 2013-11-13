@@ -276,6 +276,32 @@ def get_item_from_collections( collid ):
 
 
 
+def get_subcollections(collid):
+    """
+    Returns the subcollection IDs of a collection
+
+    collid: Collection ID
+
+    Returns a list of ( collectionID, CollectionName )
+
+    [ ( collid1, coll1_name ) ,  ( collid2, coll2name ), .... ]
+
+    """
+
+    sql= """
+        SELECT 	collectionID, collectionName 
+        FROM    collections
+        WHERE 	parentCollectionID = ? 
+    """                        
+
+    query=cur.execute(sql,(collid,))        
+    rows=query.fetchall()      
+    
+    print rows
+    return rows
+ 
+ 
+
 
 def list_tags():
     """
