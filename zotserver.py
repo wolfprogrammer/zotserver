@@ -185,7 +185,7 @@ def html_collections_link(collections):
 
         html = html + link + "<br />\n"
 
-    print html
+    #print html
     return html
 
 
@@ -247,6 +247,8 @@ def all_items():
 
     """
     items =  get_item_ids()
+
+
 
     html = html_item_link_list( items )
 
@@ -422,10 +424,17 @@ def search_library():
     query = request.params.get('q')
     last_query = query
 
-    query = format_query(query)
+    print "query "  + query
 
-    itemids = text_search(query)
-    html = html_item_link_list( itemids )
+    html = ""
+
+#    import ipdb; ipdb.set_trace()
+
+
+    if query != "":
+        query = format_query(query)
+        itemids = text_search(query)
+        html = html_item_link_list( itemids )
 
     search_form = '''
     <br />
