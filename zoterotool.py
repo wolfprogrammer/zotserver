@@ -300,7 +300,18 @@ def get_subcollections(collid):
     print rows
     return rows
  
- 
+
+def get_collections_parents():
+    sql="""    
+    SELECT collectionID, CollectionName 
+    FROM    collections
+    WHERE parentCollectionID IS NULL ;
+    """ 
+    query=cur.execute(sql)  
+    rows=query.fetchall()
+
+    return rows                 
+
 
 
 def list_tags():

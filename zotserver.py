@@ -253,8 +253,8 @@ def all_items():
     return template("base.html", subtitle="Items", content= html , backlink="index" )
           
 
-@route('/collections')
-def all_collections():
+@route('/all_collections')
+def all_collections_():
     """
     Show the user all Zotero collections 
     with a link to the items in the collections
@@ -276,6 +276,18 @@ def all_collections():
     return template("base.html", subtitle="Collections", content= html, backlink="index" )  
         
 
+@route('/collections')
+def collections_(): 
+    """
+    Show links to the parent collections
+
+    """
+    collections = get_collections_parents()
+
+    html = html_collections_link(collections)
+    
+    return template("base.html", subtitle="Collections", content= html, backlink="index" )  
+ 
 
 
 @route('/collectionid/<collid:int>')
@@ -300,7 +312,8 @@ def show_collection(collid):
     html_items = html_item_link_list( items )
 
     
-    html =   html_subcolls +  
+    
+    html =   html_subcolls +  '\n<hr width=35% color="black" align="left" >\n'
     html =   html + html_items
 
     subtilte_ = "Collection: " + collname
