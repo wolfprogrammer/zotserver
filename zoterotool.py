@@ -18,8 +18,6 @@ import os.path
 from PyLib import Config, logger
 
 
-
-
 class Zotero():
     """
     Open zotero database and query the data.

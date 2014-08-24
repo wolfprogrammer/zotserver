@@ -15,7 +15,7 @@ from bottle import route, run, debug
 from bottle import template, request, response, post, get
 from bottle import static_file
 from zoterotool import Zotero
-from PyLib import Config, logger
+from PyLib import Config, logger, get_resource_file, get_resource_path
 
 
 PORT = Config.PORT
@@ -24,6 +24,9 @@ DEBUG = Config.DEBUG
 RELOAD = Config.RELOAD
 
 zotero = Zotero(Config.DATABASE, Config.STORAGE)
+
+favicon = get_resource_path('templates/favicon.ico')
+base_template = get_resource_path("templates/base.html")
 
 
 def link_tpl(url, name, linktofile=False, newtab=False):
@@ -196,7 +199,7 @@ def index():
 
     #    content_ =  link_list + search_form + update_button
     content_ = search_form + update_button
-    return template("templates/base.html", subtitle="Options:", content=content_, backlink="index")
+    return template(base_template, subtitle="Options:", content=content_, backlink="index")
 
 
 @post('/updatelib')
@@ -221,7 +224,7 @@ def all_items():
 
     html = html_item_link_list(items)
 
-    return template("templates/base.html", subtitle="Items", content=html, backlink="index")
+    return template(base_template, subtitle="Items", content=html, backlink="index")
 
 
 @route('/all_collections')
@@ -243,7 +246,7 @@ def all_collections_():
 
     html = html_collections_link(collections)
 
-    return template("templates/base.html", subtitle="Collections", content=html, backlink="index")
+    return template(base_template, subtitle="Collections", content=html, backlink="index")
 
 
 @route('/collections')
@@ -255,7 +258,7 @@ def collections_():
     logger.warn("ROUTE: /collections")
     collections = zotero.get_collections_parents()
     html = html_collections_link(collections)
-    return template("templates/base.html", subtitle="Collections", content=html, backlink="index")
+    return template(base_template, subtitle="Collections", content=html, backlink="index")
 
 
 @route('/collectionid/<collid:int>')
@@ -280,7 +283,7 @@ def show_collection(collid):
     html = html + html_items
 
     subtilte_ = "Collection: " + collname
-    return template("templates/base.html", subtitle=subtilte_, content=html, backlink="collections")
+    return template(base_template, subtitle=subtilte_, content=html, backlink="collections")
 
 
 @route('/fileid/<itemid:int>')
@@ -344,7 +347,7 @@ def show_tags():
 
         html = html + link + "<br />\n"
 
-    return template("templates/base.html", subtitle="Tags", content=html, backlink="index")
+    return template(base_template, subtitle="Tags", content=html, backlink="index")
 
 
 @route('/tagid/<tagid:int>')
@@ -355,7 +358,9 @@ def show_tagid(tagid):
     items = zotero.filter_tag(tagid)
     html = html_item_link_list(items)
     subtilte_ = "Tag: " + tagname
-    return template("templates/base.html", subtitle=subtilte_, content=html, backlink="tags")
+    
+    
+    return template(base_template, subtitle=subtilte_, content=html, backlink="tags")
 
 
 last_query = ""
@@ -391,7 +396,7 @@ def search_library():
     search_form = search_form % ( last_query )
 
     content_ = search_form + html
-    return template("templates/base.html", subtitle="Search Library", content=content_, backlink="index")
+    return template(base_template, subtitle="Search Library", content=content_, backlink="index")
 
 
 #   return 'Your query value was: {}'.format(query)
@@ -419,13 +424,13 @@ def help():
     data from anywhere, any device, tablet, smartphone, PC ...           <br />
     """
 
-    return template("templates/base.html", subtitle="HELP", content=html, backlink="index")
+    return template(base_template, subtitle="HELP", content=html, backlink="index")
 
 
 @get('/favicon.ico')
 def get_favicon():
     logger.warn("ROUTE: /favicon")
-    return static_file('templates/favicon.ico', ".")
+    return static_file(favicon, ".")
 
 # @route('/query')
 # def query_libray(query):

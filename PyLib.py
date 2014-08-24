@@ -27,7 +27,7 @@ def this_dir():
     import inspect
     return os.path.dirname(os.path.abspath(inspect.stack()[1][1]))
 
-def resource_path(filename):
+def get_resource_path(filename):
     """
     :param filename: (str)  Name of file in same directory of script
     Returns absolute path to file in same directory that this function
@@ -116,7 +116,7 @@ def parse_confFile(filename, separator="=", comment_symbol="#"):
     entry_pattern = re.compile("(.*)%s(.*)" % separator)
     line_comment_pattern = re.compile("%s.*" % comment_symbol, re.M)
 
-    _text= line_comment_pattern.sub("" , text)
+    _text= line_comment_pattern.sub("", text)
     _test = _text
 
     data = entry_pattern.findall(_text)
@@ -129,7 +129,7 @@ def parse_confFile(filename, separator="=", comment_symbol="#"):
     #return dict(data)
     return Config
 
-Config = parse_confFile(get_resource_file("zotserver.conf"))
+Config = parse_confFile(get_resource_path("zotserver.conf"))
 
 LOG_SETTINGS = {
     # --------- GENERAL OPTIONS ---------#
