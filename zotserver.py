@@ -22,6 +22,7 @@ from Logger import logger
 PORT = Config.PORT
 HOST = Config.HOST
 DEBUG = Config.DEBUG
+RELOAD = Config.RELOAD
 
 zotero = Zotero(Config.DATABASE, Config.STORAGE)
 
@@ -196,7 +197,7 @@ def index():
 
     #    content_ =  link_list + search_form + update_button
     content_ = search_form + update_button
-    return template("base.html", subtitle="Options:", content=content_, backlink="index")
+    return template("templates/base.html", subtitle="Options:", content=content_, backlink="index")
 
 
 @post('/updatelib')
@@ -221,7 +222,7 @@ def all_items():
 
     html = html_item_link_list(items)
 
-    return template("base.html", subtitle="Items", content=html, backlink="index")
+    return template("templates/base.html", subtitle="Items", content=html, backlink="index")
 
 
 @route('/all_collections')
@@ -243,7 +244,7 @@ def all_collections_():
 
     html = html_collections_link(collections)
 
-    return template("base.html", subtitle="Collections", content=html, backlink="index")
+    return template("templates/base.html", subtitle="Collections", content=html, backlink="index")
 
 
 @route('/collections')
@@ -255,7 +256,7 @@ def collections_():
     logger.warn("ROUTE: /collections")
     collections = zotero.get_collections_parents()
     html = html_collections_link(collections)
-    return template("base.html", subtitle="Collections", content=html, backlink="index")
+    return template("templates/base.html", subtitle="Collections", content=html, backlink="index")
 
 
 @route('/collectionid/<collid:int>')
@@ -280,7 +281,7 @@ def show_collection(collid):
     html = html + html_items
 
     subtilte_ = "Collection: " + collname
-    return template("base.html", subtitle=subtilte_, content=html, backlink="collections")
+    return template("templates/base.html", subtitle=subtilte_, content=html, backlink="collections")
 
 
 @route('/fileid/<itemid:int>')
@@ -344,7 +345,7 @@ def show_tags():
 
         html = html + link + "<br />\n"
 
-    return template("base.html", subtitle="Tags", content=html, backlink="index")
+    return template("templates/base.html", subtitle="Tags", content=html, backlink="index")
 
 
 @route('/tagid/<tagid:int>')
@@ -355,21 +356,8 @@ def show_tagid(tagid):
     items = zotero.filter_tag(tagid)
     html = html_item_link_list(items)
     subtilte_ = "Tag: " + tagname
-    return template("base.html", subtitle=subtilte_, content=html, backlink="tags")
+    return template("templates/base.html", subtitle=subtilte_, content=html, backlink="tags")
 
-# @route('/query')
-# def query_libray(query):
-# """
-# Full text search in the database
-
-# http://<base url>/search-expression
-
-# """
-
-##    itemids = text_search(query)
-##    html = html_item_link_list( itemids )
-##    return html
-#return query
 
 last_query = ""
 
@@ -404,7 +392,7 @@ def search_library():
     search_form = search_form % ( last_query )
 
     content_ = search_form + html
-    return template("base.html", subtitle="Search Library", content=content_, backlink="index")
+    return template("templates/base.html", subtitle="Search Library", content=content_, backlink="index")
 
 
 #   return 'Your query value was: {}'.format(query)
@@ -419,8 +407,7 @@ def status():
     logger.warn("ROUTE: /status")
 
     response.content_type = "text/plain"
-    return subprocess.check_output(["cat", "/tmp/zotserver.log"])
-
+    return open(Config.LOG,"r").read()
 
 @route("/help")
 def help():
@@ -433,19 +420,33 @@ def help():
     data from anywhere, any device, tablet, smartphone, PC ...           <br />
     """
 
-    return template("base.html", subtitle="HELP", content=html, backlink="index")
+    return template("templates/base.html", subtitle="HELP", content=html, backlink="index")
 
 
 @get('/favicon.ico')
 def get_favicon():
     logger.warn("ROUTE: /favicon")
-    return static_file('favicon.ico', ".")
+    return static_file('templates/favicon.ico', ".")
+
+# @route('/query')
+# def query_libray(query):
+# """
+# Full text search in the database
+
+# http://<base url>/search-expression
+
+# """
+
+##    itemids = text_search(query)
+##    html = html_item_link_list( itemids )
+##    return html
+#return query
 
 
 def main():
     data = {"PORT": PORT, "HOST": HOST}
     logger.warn("Starting server %s" % data)
-    run(host=HOST, port=PORT, debug=DEBUG, reloader=True)
+    run(host=HOST, port=PORT, debug=DEBUG, reloader=RELOAD)
 
 
 # Run the server 
