@@ -17,7 +17,6 @@ import os.path
 from  os.path import isfile  
 from  os import system
 
-
 # Location of zotero folder must be set by the user
 ZOTERO_LOCATION =  ".mozilla/firefox/i1thdo2f.Capes/zotero/"
 
@@ -56,14 +55,9 @@ def open_database(database):
     conn= sq.connect(database,timeout=10)
     cur = conn.cursor()
 
-
-
 def close_database():
     conn.close()
     return 0
-
-
-
 
 def create_text_index():
     """
@@ -96,8 +90,6 @@ def create_text_index():
     cur.execute(sql2)
     conn.commit()
 
-
-
 def text_search(text):
 
     sql = """
@@ -122,8 +114,6 @@ def text_search(text):
 
     return itemids           
 
-
-
 def create_itemName_view(): 
     """
     Create viw:  item_names
@@ -143,11 +133,7 @@ def create_itemName_view():
     query=cur.execute(sql)   
     conn.commit()
 
-
-
-
 #create_itemName_view();
-
 
 def  get_tags():
     """
@@ -171,8 +157,6 @@ def  get_tags():
 
     ##print rows
     return rows
-
-
 
 def get_tagname(tagid):
     
@@ -211,7 +195,6 @@ def get_collection_name(collid):
         return rows 
 
     return []
-                     
 
 def get_collections():
     """
@@ -226,7 +209,6 @@ def get_collections():
     rows=query.fetchall()
 
     return rows
-
 
 def get_collections_items():
     """
@@ -245,8 +227,6 @@ def get_collections_items():
     query = cur.execute(sql)
     rows = query.fetchall()
     return rows
-
-
 
 def get_item_from_collections( collid ):
     """
@@ -274,8 +254,6 @@ def get_item_from_collections( collid ):
 
     return itemids
 
-
-
 def get_subcollections(collid):
     """
     Returns the subcollection IDs of a collection
@@ -299,7 +277,6 @@ def get_subcollections(collid):
     
     print rows
     return rows
- 
 
 def get_collections_parents():
     sql="""    
@@ -311,8 +288,6 @@ def get_collections_parents():
     rows=query.fetchall()
 
     return rows                 
-
-
 
 def list_tags():
     """
@@ -329,8 +304,6 @@ def list_tags():
         tagID, tag = row
         #print str(tagID) + "\t" + tag
 
-
-
 def list_collections():
     """
     #print all Zotero collections
@@ -342,7 +315,6 @@ def list_collections():
     for row in rows:
         collID, collection = row
         #print str(collID) + "\t" + collection
-
 
 def get_item_ids():
     """
@@ -368,7 +340,6 @@ def get_item_ids():
 
     return itemids         
 
-
 def get_items():
     """
     Get all items in zotero library
@@ -389,7 +360,6 @@ def get_items():
 
     return rows
 
-
 def list_items():
     """
     #print all items in zotero library.
@@ -402,8 +372,6 @@ def list_items():
     for row in rows:
         itemID , itemName = row
         #print str(itemID) + "\t" + itemName
-
-
 
 def filter_tag(tagid):
        """
@@ -430,10 +398,6 @@ def filter_tag(tagid):
 
        return itemids     
 
-        
-
-
-
 def get_item_data(itemid):
 
     sql = """
@@ -452,8 +416,6 @@ def get_item_data(itemid):
 
     return rows
 
-
-
 def list_item_data(itemid):
 
     rows = get_item_data(itemid)
@@ -461,8 +423,6 @@ def list_item_data(itemid):
     for row in rows:
         data_type , value = row
         print data_type + "\t\t" + value + "\n"
-
-
 
 def get_item_attachment(itemid):
     sql = """
@@ -500,8 +460,6 @@ def get_item_attachment(itemid):
             return -1
 
         return ffile
-
-
 
 def get_attachment2(itemid):
     
@@ -563,8 +521,6 @@ def get_attachment2(itemid):
 
     return PATH
 
-
-
 def get_attachment( itemid ):
 
     sql = """
@@ -611,10 +567,6 @@ def get_attachment( itemid ):
 
         return PATH
 #    return rows
-
-
-
-
 
 
 # Close database connection

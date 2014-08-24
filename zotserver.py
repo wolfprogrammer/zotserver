@@ -6,29 +6,26 @@ Module program description
 	1. This program does
 	2. The user interface is ....
 
-"""    
+"""
 
-PORT=8080	#: Sets the default port
+PORT = 8080  # : Sets the default port
 
-HOST='0.0.0.0'  #: Accept anyhost  
-#HOST='127.0.0.1' # Local host only
+HOST = '0.0.0.0'  # : Accept anyhost
+# HOST='127.0.0.1' # Local host only
 
-#DEBUG= True     #: True - Debug ON
-DEBUG= False
-
+# DEBUG= True     #: True - Debug ON
+DEBUG = False
 
 from bottle import static_file, abort, redirect
 from bottle import route, run, debug
 from bottle import template, request, response, post, get
-from bottle import validate, static_file      
-
-from  zoterotool import *
-
+from bottle import static_file
+from zoterotool import *
 
 open_database("zotero.sqlite");
 
 
-def link_tpl(url,name, linktofile =False ,newtab=False):
+def link_tpl(url, name, linktofile=False, newtab=False):
     """
     Create html link code to URL
     Returns the html code to the link
@@ -42,17 +39,14 @@ def link_tpl(url,name, linktofile =False ,newtab=False):
     """
 
     if linktofile == True:
-         url="/files/" + url
+        url = "/files/" + url
 
     targ = ""
     if newtab == True:
         targ = ' target="_blank" '
 
-
-    link = '<a href="' + url + '"' + targ + '>' + name + '</a>'  
+    link = '<a href="' + url + '"' + targ + '>' + name + '</a>'
     return link
-    
-
 
 
 def get_item_link(itemid):
@@ -62,29 +56,26 @@ def get_item_link(itemid):
     """
     # Get item attachment path
     #path =  get_item_attachment(itemid)
-    path =  get_attachment(itemid)
- 
+    path = get_attachment(itemid)
+
     if path is not None:
         #path = os.path.join("/files", path)
         #path = "/files" + path
 
-        name = os.path.split(path)[1]        
-        link = link_tpl( path, name, linktofile = True, newtab =True  )
+        name = os.path.split(path)[1]
+        link = link_tpl(path, name, linktofile=True, newtab=True)
         #print link
 
 
         #link = '<a href="' + path + '">' + "file" + "</a>"
 
 
-        return link    
+        return link
 
     return None
 
 
-
-
-
-def link_list_tpl ( url_list ):
+def link_list_tpl(url_list):
     """
     Generates a html code of a  list of links 
     given a list of URL
@@ -96,15 +87,14 @@ def link_list_tpl ( url_list ):
     html = ""
 
     for url_ in url_list:
-
         url, name = url_
         link = link_tpl(url, name)
-        html = html + "*" + link  + "<br />\n"
+        html = html + "*" + link + "<br />\n"
 
     return html
 
 
-def html_item_link_list( itemIDs ):
+def html_item_link_list(itemIDs):
     """
     Creates a html code of link to the library Items,
     given the item ID
@@ -112,39 +102,33 @@ def html_item_link_list( itemIDs ):
     Input: itemIDs:  list of integer values itemID
 
     """
-    
+
     html = ""
-    
+
     for itemid in itemIDs:
-        
+
         link = get_item_link(itemid)
 
-
         if link is not None:
-
-            html2 = item_data_html( itemid )
-            html = html + link + "<br />" + html2  +  "<br /><br />\n"
+            html2 = item_data_html(itemid)
+            html = html + link + "<br />" + html2 + "<br /><br />\n"
 
     return html
 
 
-
-
-def item_data_html( itemid ):
+def item_data_html(itemid):
     """
     Returns item data in html format
 
     """
-    data = get_item_data( itemid ) 
+    data = get_item_data(itemid)
 
     html = ""
-    
-    for dat  in data:
-        html = html +  "%s\t\t%s <br />\n " % ( dat[0], dat[1] )
+
+    for dat in data:
+        html = html + "%s\t\t%s <br />\n " % ( dat[0], dat[1] )
 
     return html
-
-
 
 
 def format_query(query):
@@ -154,15 +138,14 @@ def format_query(query):
 
     """
     words = query.split()
-#    print words
+    #    print words
 
     text = ""
-    for idx in range(len(words)-1):
-        text = text + words[idx] + " OR " 
+    for idx in range(len(words) - 1):
+        text = text + words[idx] + " OR "
 
     text = text + words[-1]
-    return text               
-
+    return text
 
 
 def html_collections_link(collections):
@@ -174,14 +157,12 @@ def html_collections_link(collections):
 
     """
 
-
     html = ""
     for coll in collections:
         collid, collname = coll
 
-    
-        url   = "/collectionid/" + str(collid)
-        link  = link_tpl(url,collname)
+        url = "/collectionid/" + str(collid)
+        link = link_tpl(url, collname)
 
         html = html + link + "<br />\n"
 
@@ -189,40 +170,36 @@ def html_collections_link(collections):
     return html
 
 
-
-
-
 @route('/index')
 @route('/')
-def index():  
-
+def index():
     #link_list   =  link_list_tpl(\
-            #[\
-            #[ "/items", "Items"             ] ,\
-            #[ "/tags", "Tags"               ] ,\
-            #[ "/collections", "Collections" ] ,\
-            #[ "/status","Server Status"     ] ,\
-            #[ "/help","Help"                ] ])
-    
-    
+    #[\
+    #[ "/items", "Items"             ] ,\
+    #[ "/tags", "Tags"               ] ,\
+    #[ "/collections", "Collections" ] ,\
+    #[ "/status","Server Status"     ] ,\
+    #[ "/help","Help"                ] ])
+
+
     search_form = '''
     <br />
     <form action="/search" method="GET">
             Search Library <br /><input name="q" type="text" autofocus />
             <input value="Search" type="submit" />
         </form>
-    '''                           
+    '''
 
     update_button = '''
     <br /><br />
     <form action="/updatelib" method="post">    
         <input value="Update Library" type="submit" />
     </form>
-    '''                                             
-  
-#    content_ =  link_list + search_form + update_button
-    content_ =   search_form + update_button
-    return template("base.html", subtitle="Options:", content= content_ , backlink = "index" )
+    '''
+
+    #    content_ =  link_list + search_form + update_button
+    content_ = search_form + update_button
+    return template("base.html", subtitle="Options:", content=content_, backlink="index")
 
 
 @post('/updatelib')
@@ -236,8 +213,6 @@ def updatelibrary():
     redirect("/index")
 
 
-
-
 @route('/items')
 def all_items():
     """
@@ -246,14 +221,12 @@ def all_items():
     link.
 
     """
-    items =  get_item_ids()
+    items = get_item_ids()
 
+    html = html_item_link_list(items)
 
+    return template("base.html", subtitle="Items", content=html, backlink="index")
 
-    html = html_item_link_list( items )
-
-    return template("base.html", subtitle="Items", content= html , backlink="index" )
-          
 
 @route('/all_collections')
 def all_collections_():
@@ -269,17 +242,16 @@ def all_collections_():
     ...
 
     """
-    
 
     collections = get_collections()
 
     html = html_collections_link(collections)
-    
-    return template("base.html", subtitle="Collections", content= html, backlink="index" )  
-        
+
+    return template("base.html", subtitle="Collections", content=html, backlink="index")
+
 
 @route('/collections')
-def collections_(): 
+def collections_():
     """
     Show links to the parent collections
 
@@ -287,16 +259,13 @@ def collections_():
     collections = get_collections_parents()
 
     html = html_collections_link(collections)
-    
-    return template("base.html", subtitle="Collections", content= html, backlink="index" )  
- 
+
+    return template("base.html", subtitle="Collections", content=html, backlink="index")
 
 
 @route('/collectionid/<collid:int>')
 def show_collection(collid):
-
-
-    # Find all subcollections from a given collecion 
+    # Find all subcollections from a given collecion
     # which  collID is known.
     #
     # subcollections =  [ ( collIDx, collNameX ), ( ....) ... ]
@@ -304,23 +273,17 @@ def show_collection(collid):
     subcollections = get_subcollections(collid)
     html_subcolls = html_collections_link(subcollections)
 
-
-
-
     collname = get_collection_name(collid)
 
     items = get_item_from_collections(collid)
 
-    html_items = html_item_link_list( items )
+    html_items = html_item_link_list(items)
 
-    
-    
-    html =   html_subcolls +  '\n<hr width=35% color="black" align="left" >\n'
-    html =   html + html_items
+    html = html_subcolls + '\n<hr width=35% color="black" align="left" >\n'
+    html = html + html_items
 
     subtilte_ = "Collection: " + collname
-    return template("base.html", subtitle= subtilte_ , content= html, backlink="collections" )   
-
+    return template("base.html", subtitle=subtilte_, content=html, backlink="collections")
 
 
 @route('/fileid/<itemid:int>')
@@ -332,34 +295,31 @@ def retrive_file(itemid):
 
     path = get_attachment(itemid)
     if path is not None:
-        path_, file_ = os.path.split(path)   
+        path_, file_ = os.path.split(path)
 
         #print path_
         #print file_
 
-        return static_file(file_, path_, download = file_ ) 
-#       return "File was  " + str(itemid) + " " + path
+        return static_file(file_, path_, download=file_)
+    #       return "File was  " + str(itemid) + " " + path
     else:
         return "Error: File not found"
 
 
-        
-
 @route('/files/<path:path>')
 def callback(path):
-
     #path=os.path.join("/",path)
     #print path
 
     #print "path =" + path
-    if os.path.isfile( path ):
+    if os.path.isfile(path):
         path_, file_ = os.path.split(path)
 
         #print "retriving"
         #print "path " + path_
         #print "filename =" + file_
 
-        return static_file(file_, path_ )
+        return static_file(file_, path_)
     else:
         return "Error: File don't exist on server."
 
@@ -377,64 +337,63 @@ def show_tags():
 
     tags = get_tags()
     for tag in tags:
-
         tagid, tagname = tag
 
-        url =   "/tagid/" + str(tagid)
+        url = "/tagid/" + str(tagid)
         #print url
-        link = link_tpl(url,tagname)
+        link = link_tpl(url, tagname)
 
         html = html + link + "<br />\n"
 
+    return template("base.html", subtitle="Tags", content=html, backlink="index")
 
-    return template("base.html", subtitle="Tags", content= html, backlink="index" )  
+
 #    return html
 
 
 @route('/tagid/<tagid:int>')
 def show_tagid(tagid):
-
     tagname = get_tagname(tagid)
     items = filter_tag(tagid)
-    html = html_item_link_list( items )
-  
+    html = html_item_link_list(items)
 
     subtilte_ = "Tag: " + tagname
-    return template("base.html", subtitle= subtilte_ , content= html, backlink="tags" ) 
+    return template("base.html", subtitle=subtilte_, content=html, backlink="tags")
 
 
 #@route('/query')
 #def query_libray(query):
-    #"""
-    #Full text search in the database
+#"""
+#Full text search in the database
 
-    #http://<base url>/search-expression
+#http://<base url>/search-expression
 
-    #"""
+#"""
 
 ##    itemids = text_search(query)
 ##    html = html_item_link_list( itemids )
 ##    return html
-    #return query
+#return query
 
 last_query = ""
+
 
 @route('/search')
 def search_library():
     query = request.params.get('q')
     last_query = query
 
-    print "query "  + query
+    print "query " + query
 
     html = ""
 
-#    import ipdb; ipdb.set_trace()
+    #    import ipdb; ipdb.set_trace()
 
 
     if query != "":
         query = format_query(query)
         itemids = text_search(query)
-        html = html_item_link_list( itemids )
+        html = html_item_link_list(itemids)
 
     search_form = '''
     <br />
@@ -443,17 +402,12 @@ def search_library():
             <input value="Search" type="submit" />
         </form>
     <br />            
-    '''           
+    '''
 
+    search_form = search_form % ( last_query )
 
-
-    search_form = search_form % ( last_query )            
-
-    content_ =   search_form + html
-    return template("base.html", subtitle="Search Library", content= content_ , backlink = "index" )
-          
-
-
+    content_ = search_form + html
+    return template("base.html", subtitle="Search Library", content=content_, backlink="index")
 
 
 #   return 'Your query value was: {}'.format(query)
@@ -465,15 +419,13 @@ def status():
     Shows the status of the server
     """
     import subprocess
-    
+
     response.content_type = "text/plain"
     return subprocess.check_output(["cat", "/tmp/zotserver.log"])
 
 
-
 @route("/help")
 def help():
-
     html = """
     The ZOTERO SERVER - Is a http web server that uses bottle framework. <br />
     This simple and lightweight web server allows to access the Zotero   <br />
@@ -482,22 +434,20 @@ def help():
 
     """
 
-    return template("base.html", subtitle= "HELP" , content= html , backlink="index" ) 
-
-
+    return template("base.html", subtitle="HELP", content=html, backlink="index")
 
 
 @get('/favicon.ico')
 def get_favicon():
-    return static_file('favicon.ico', "." )     
+    return static_file('favicon.ico', ".")
 
 
 def main():
-    run(host=HOST, port=PORT, debug=DEBUG, reloader=True)   
+    run(host=HOST, port=PORT, debug=DEBUG, reloader=True)
 
 
 # Run the server 
-if __name__=="__main__":     
+if __name__ == "__main__":
     main()
           
 
