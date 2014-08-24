@@ -240,7 +240,7 @@ def route_updatelib():
     logger.warn("ROUTE: /updatelib")
     # os.system("./update.sh")
     # open_database("zotero.sqlite");
-    # create_text_index()
+    zotero.create_text_index()
     redirect("/index")
 
 
@@ -461,11 +461,16 @@ def route_help():
     logger.warn("ROUTE: help")
 
     html = \
-        """
-    The ZOTERO SERVER - Is a http web server that uses bottle framework. <br />
-    This simple and lightweight web server allows to access the Zotero   <br />
-    data from anywhere, any device, tablet, smartphone, PC ...           <br />
     """
+    The ZOTERO SERVER - Is a http web server that uses bottle framework. <br />
+    This simple and lightweight and self contained web server allows to access the     <br />
+    Zotero data from anywhere or from anywhere, any device, tablet, smartphone, PC ... <br />
+
+    See updates on: %s
+    """
+    link = link_tpl("https://github.com/wolfprogrammer/zotserver", "Zotserver Repository"
+                    ,linktofile=False, newtab=True)
+    html = html % link
 
     return template(base_template, subtitle="HELP", content=html, backlink="index")
 

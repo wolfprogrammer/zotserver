@@ -10,6 +10,11 @@ It provides logging, configuration parser and resourse file.
 
 import logging
 import logging.config
+import os
+import shutil
+
+HOME = os.path.expanduser("~")
+
 
 def this():
     """
@@ -128,10 +133,19 @@ def parse_confFile(filename, separator="=", comment_symbol="#"):
 
     #return dict(data)
     return Config
-import os
-Config = parse_confFile(get_resource_path("zotserver.conf"))
-# Config.STORAGE = os.path.join(Config.ZOTDIR, Config.STORAGE)
-# Config.DATABASE = os.path.join(Config.ZOTDIR, Config.DATABASE)
+
+zotserverconf = os.path.join(HOME, ".zotserver.conf")
+
+if not os.path.exists(zotserverconf):
+    print "Creating configuration file %s" % zotserverconf
+    try:
+        print "copying user file"
+        shutil.copyfile(get_resource_path("templates/zotserver.conf"), zotserverconf)
+    except:
+        pass
+
+Config = parse_confFile(zotserverconf)
+
 
 LOG_SETTINGS = {
     # --------- GENERAL OPTIONS ---------#
@@ -154,7 +168,7 @@ LOG_SETTINGS = {
         },
 
         'file': {
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'level': 'NOTSET',
             'formatter': 'detailed',
             'filename': '/tmp/zotero.log',
