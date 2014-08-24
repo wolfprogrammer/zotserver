@@ -5,12 +5,11 @@
 #
 # 
 
-FIREFOX_PROFILE="i1thdo2f.Capes"
+FIREFOX_PROFILE=""
 
 #-----------------------------------------------------------#
 # Location of zotero folder must be set by the user
 
-HOST="caio@192.168.1.3"
 ZOTERO_LOCATION="$HOME/.mozilla/firefox/$FIREFOX_PROFILE/zotero" 
 STORAGE_LOCATION=$ZOTERO_LOCATION"/storage"
 echo $ZOTERO_LOCATION
@@ -29,7 +28,3 @@ mkdir -p  storage
 sshpass -p "toor1" rsync -avP --delete $HOST:$STORAGE_LOCATION/  storage
 # Copy zotero database
 sshpass -p "toor1" rsync -avP $HOST:$ZOTERO_LOCATION/zotero.sqlite  .
- 
-
-
-

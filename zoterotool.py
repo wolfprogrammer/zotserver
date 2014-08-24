@@ -7,16 +7,16 @@ Module to extract data from Zotero database
 This module allows to export and extract Zotero's
 data to external applications.
 
-TODO: Add a better module docstring
-TODO: Make database (Sqlite) thread safe
-TODO: Create an object to handle the database and close it each request
+@TODO: Add a better module docstring
+@TODO: Make database (Sqlite) thread safe
+@TODO: Create an object to handle the database and close it each request
 
 """
 # from __future__ import unicode_literals
 import sqlite3
 import os.path
-from Config import Config
-from Logger import logger
+from PyLib import Config, logger
+
 
 
 
@@ -495,52 +495,33 @@ class Zotero():
         WHERE itemID > 1 AND itemID = ? ;
 
         """
+        logger.debug("Query attachment2 itemid = %s " % itemid)
         conn, cur = self.open_database()
         query = cur.execute(sql, (itemid,))
         rows = query.fetchall()
         conn.close()
 
-        ##print rows
-
         if rows == []:
             return None
 
-        data = rows[0]
+        data, key, path, mtype, title = rows
 
-        key = data[1]
-
-        path = data[2]
-
-        mtype = data[3]
-
-        title = data[4]
-
-        #if name is None:
-
-        #    #print "tr1"
-        #    return None
+        logger.debug({"data": data, "path": path, "mtype": mtype, "title": title})
 
         if title is None:
             return None
 
         if path is None:
-            #        #print "tr2"
-
             data2 = self.get_attachment(itemid + 1);
-            #        #print "data2 ="
-            #        #print data2
             return data2
-
-        ##print "tr3"
 
         fname = path.split("storage:")[1]
         PATH = os.path.join(self.storage, key, fname)
-        ##print PATH
-
 
         return PATH
 
     def get_attachment(self, itemid):
+        logger.debug("Get attachment itemid = %s " % itemid)
 
         sql = """
         SELECT  path,  key FROM
@@ -557,32 +538,20 @@ class Zotero():
         rows = query.fetchall()
         conn.close()
 
-        #print "item= " + str(itemid)
-        #print rows
-
-
         if rows == []:
             return None
         else:
-
-            #print "------------"
             path, key = rows[0]
-            #print itemid
-            #print "path = " + path
-            #print "key = "  + key
 
-
+            logger.debug({"itemid": itemid, "path": path, "key": key})
 
             if path == None:
                 if len(rows) == 1:
                     return None
-
                 path, key = rows[1]
 
             fname = path.split("storage:")[1]
-
             PATH = os.path.join(self.storage, key, fname)
-
             return PATH
 
 

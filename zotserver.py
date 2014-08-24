@@ -9,14 +9,13 @@ Module program description
 
 """
 import os
-from Config import Config
+
 from bottle import static_file, abort, redirect
 from bottle import route, run, debug
 from bottle import template, request, response, post, get
 from bottle import static_file
 from zoterotool import Zotero
-
-from Logger import logger
+from PyLib import Config, logger
 
 
 PORT = Config.PORT
