@@ -2,10 +2,15 @@
 # -*- coding: utf-8 -*-
 
 """
+Zotsever.py
 
-Module program description
-1. This program does
-2. The user interface is ....
+Zotserver main file. To change configurations. Change the file zotserver.conf
+directories and database location.
+
+1 - First edit and run ./scripts/update.sh
+2 - Change zotserver.conf paths to storage location of zotero files and datbase
+3 - Run ./zotserver.py
+
 
 """
 import os
@@ -171,7 +176,7 @@ def html_collections_link(collections):
 
 @route('/index')
 @route('/')
-def index():
+def route_index():
     # link_list   =  link_list_tpl(\
     # [\
     # [ "/items", "Items"             ] ,\
@@ -203,16 +208,16 @@ def index():
 
 
 @post('/updatelib')
-def updatelibrary():
+def route_updatelib():
     logger.warn("ROUTE: /updatelib")
-    # os.system("./update-data.sh")
+    # os.system("./update.sh")
     # open_database("zotero.sqlite");
     # create_text_index()
     redirect("/index")
 
 
 @route('/items')
-def all_items():
+def route_all_items():
     """
     In this page all Zotero collection
     items are printed with a download 
@@ -228,7 +233,7 @@ def all_items():
 
 
 @route('/all_collections')
-def all_collections_():
+def route_all_collections_():
     """
     Show the user all Zotero collections 
     with a link to the items in the collections
@@ -250,7 +255,7 @@ def all_collections_():
 
 
 @route('/collections')
-def collections_():
+def route_collections():
     """
     Show links to the parent collections
 
@@ -262,7 +267,7 @@ def collections_():
 
 
 @route('/collectionid/<collid:int>')
-def show_collection(collid):
+def route_collectionid(collid):
     # Find all subcollections from a given collecion
     # which  collID is known.
     #
@@ -287,19 +292,21 @@ def show_collection(collid):
 
 
 @route('/fileid/<itemid:int>')
-def retrive_file(itemid):
+def route_fileid(itemid):
     """
     Retrives file that matches itemid
 
     """
     logger.warn("ROUTE: /fileid = %s" % itemid)
-
     path = zotero.get_attachment(itemid)
+    logger.debug("path = %s" % path)
+
     if path is not None:
         path_, file_ = os.path.split(path)
 
-        # print path_
-        # print file_
+
+        logger.debug("path_ = %s" % path_)
+        logger.debug("file_ = %s" % file_)
 
         return static_file(file_, path_, download=file_)
     # return "File was  " + str(itemid) + " " + path
@@ -308,26 +315,23 @@ def retrive_file(itemid):
 
 
 @route('/files/<path:path>')
-def callback(path):
+def route_files(path):
     logger.warn("ROUTE: /file = %s" % path)
-    # path=os.path.join("/",path)
-    # print path
 
-    # print "path =" + path
     if os.path.isfile(path):
         path_, file_ = os.path.split(path)
 
-        # print "retriving"
-        # print "path " + path_
-        # print "filename =" + file_
+        logger.debug("path_ = %s" % path_)
+        logger.debug("file_ = %s" % file_)
 
         return static_file(file_, path_)
     else:
+        logger.debug("Error: File don't exist on server.")
         return "Error: File don't exist on server."
 
 
 @route('/tags')
-def show_tags():
+def route_tags():
     """
     In this page all tags are showed
     when some tag is clicked only the files
@@ -340,26 +344,21 @@ def show_tags():
     tags = zotero.get_tags()
     for tag in tags:
         tagid, tagname = tag
-
         url = "/tagid/" + str(tagid)
-        # print url
         link = link_tpl(url, tagname)
-
         html = html + link + "<br />\n"
 
     return template(base_template, subtitle="Tags", content=html, backlink="index")
 
 
 @route('/tagid/<tagid:int>')
-def show_tagid(tagid):
+def route_tagid(tagid):
     logger.warn("ROUTE: /tagid = %s" % tagid)
 
     tagname = zotero.get_tagname(tagid)
     items = zotero.filter_tag(tagid)
     html = html_item_link_list(items)
     subtilte_ = "Tag: " + tagname
-    
-    
     return template(base_template, subtitle=subtilte_, content=html, backlink="tags")
 
 
@@ -367,7 +366,7 @@ last_query = ""
 
 
 @route('/search')
-def search_library():
+def route_search():
     query = request.params.get('q')
     last_query = query
 
@@ -403,7 +402,7 @@ def search_library():
 
 
 @route("/status")
-def status():
+def route_status():
     """
     Shows the status of the server
     """
@@ -414,7 +413,7 @@ def status():
     return open(Config.LOG,"r").read()
 
 @route("/help")
-def help():
+def route_help():
     logger.warn("ROUTE: help")
 
     html = \
