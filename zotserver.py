@@ -28,7 +28,7 @@ HOST = Config.HOST
 DEBUG = Config.DEBUG
 RELOAD = Config.RELOAD
 
-zotero = Zotero(Config.DATABASE, Config.STORAGE)
+zotero = Zotero(Config.DATABASE, Config.STORAGE, Config.ZOTDIR)
 
 favicon = get_resource_path('templates/favicon.ico')
 base_template = get_resource_path("templates/base.html")
@@ -56,6 +56,30 @@ def link_tpl(url, name, linktofile=False, newtab=False):
     link = '<a href="' + url + '"' + targ + '>' + name + '</a>'
     return link
 
+def item_link_tpl(path, name, newtab=True):
+    """
+    Create html link code to URL
+    Returns the html code to the link
+
+    linktofile = False : Link to any page
+               = True  : Link to Internal file
+
+    newtab     = False : Open the links in same tab/window
+                 True  : Force to open links in new tab
+    """
+
+    url = os.path.join("/library/", os.path.relpath(path, zotero.storage))
+    logger.debug("url = %s" % url)
+
+    targ = ""
+    if newtab == True:
+        targ = ' target="_blank" '
+
+    link = "".join(['<a href="', url, '"', targ, '>', name, '</a>'])
+    logger.debug("link = %s" % link)
+    return link
+
+
 
 def get_item_link(itemid):
     """
@@ -66,12 +90,14 @@ def get_item_link(itemid):
     # path =  get_item_attachment(itemid)
     path = zotero.get_attachment(itemid)
 
+    logger.debug("path = %s" % path)
+
     if path is not None:
         # path = os.path.join("/files", path)
         # path = "/files" + path
 
         name = os.path.split(path)[1]
-        link = link_tpl(path, name, linktofile=True, newtab=True)
+        link = item_link_tpl(path, name, newtab=True)
         # print link
         # link = '<a href="' + path + '">' + "file" + "</a>"
         return link
@@ -112,6 +138,8 @@ def html_item_link_list(itemIDs):
     for itemid in itemIDs:
 
         link = get_item_link(itemid)
+        logger.debug("itemid = %s" % itemid)
+        logger.debug("link = %s" % link)
 
         if link is not None:
             html2 = item_data_html(itemid)
@@ -217,7 +245,7 @@ def route_updatelib():
 
 
 @route('/items')
-def route_all_items():
+def route_items():
     """
     In this page all Zotero collection
     items are printed with a download 
@@ -304,7 +332,6 @@ def route_fileid(itemid):
     if path is not None:
         path_, file_ = os.path.split(path)
 
-
         logger.debug("path_ = %s" % path_)
         logger.debug("file_ = %s" % file_)
 
@@ -316,10 +343,27 @@ def route_fileid(itemid):
 
 @route('/files/<path:path>')
 def route_files(path):
-    logger.warn("ROUTE: /file = %s" % path)
+    logger.warn("ROUTE: /files = %s" % path)
 
     if os.path.isfile(path):
         path_, file_ = os.path.split(path)
+
+        logger.debug("path_ = %s" % path_)
+        logger.debug("file_ = %s" % file_)
+
+        return static_file(file_, path_)
+    else:
+        logger.debug("Error: File don't exist on server.")
+        return "Error: File don't exist on server."
+
+@route('/library/<path:path>')
+def route_library(path):
+    logger.warn("ROUTE: /files = %s" % path)
+
+    _path = os.path.join(zotero.storage, path)
+
+    if os.path.isfile(_path):
+        path_, file_ = os.path.split(_path)
 
         logger.debug("path_ = %s" % path_)
         logger.debug("file_ = %s" % file_)

@@ -128,8 +128,10 @@ def parse_confFile(filename, separator="=", comment_symbol="#"):
 
     #return dict(data)
     return Config
-
+import os
 Config = parse_confFile(get_resource_path("zotserver.conf"))
+# Config.STORAGE = os.path.join(Config.ZOTDIR, Config.STORAGE)
+# Config.DATABASE = os.path.join(Config.ZOTDIR, Config.DATABASE)
 
 LOG_SETTINGS = {
     # --------- GENERAL OPTIONS ---------#

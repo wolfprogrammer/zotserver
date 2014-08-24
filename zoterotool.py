@@ -24,7 +24,7 @@ class Zotero():
 
     """
 
-    def __init__(self, database, storage):
+    def __init__(self, database, storage, zotdir):
         """
         :param database:  Datbase file
         :param storage:   Storage directory
@@ -33,8 +33,9 @@ class Zotero():
         :type storage:    str
         :rtype : None
         """
-        self.database = database
-        self.storage = storage
+        self.database = os.path.join(zotdir, database)
+        self.storage = os.path.join(zotdir, storage)
+        self.zotdir  = zotdir
 
         logger.warn("Opening database database=%s database=%s" % (database, storage))
 
