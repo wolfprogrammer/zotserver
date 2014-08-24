@@ -7,576 +7,605 @@ Module to extract data from Zotero database
 This module allows to export and extract Zotero's
 data to external applications.
 
-
+TODO: Add a better module docstring
+TODO: Make database (Sqlite) thread safe
+TODO: Create an object to handle the database and close it each request
 
 """
-#from __future__ import unicode_literals    
-
-import sqlite3 as sq
+# from __future__ import unicode_literals
+import sqlite3
 import os.path
-from  os.path import isfile  
-from  os import system
-
-# Location of zotero folder must be set by the user
-ZOTERO_LOCATION =  ".mozilla/firefox/i1thdo2f.Capes/zotero/"
+from Config import Config
+from Logger import logger
 
 
-global HOME
-global STORAGE_PATH
-# Paths
-#HOME = os.path.expanduser("~/")
-#PATH= HOME + "zotero-server/"
-STORAGE_PATH= "storage/"
 
-#print PATH
-
-#  Create a copy of zotero database due to lock issues.
-#
-#DATABASE2 = PATH + "zotero.sqlite"
-DATABASE2 =  "zotero.sqlite"
-
-#system("cp " + DATABASE1 + " " +  DATABASE2 )
-
-global conn
-global cur
-
-
-def open_database(database):
+class Zotero():
     """
-    First function of this module that needs to be executed
-    open a connection to zotero database
-
-    """
-    global conn
-    global cur
-
-    
-    # Connect to database file
-    conn= sq.connect(database,timeout=10)
-    cur = conn.cursor()
-
-def close_database():
-    conn.close()
-    return 0
-
-def create_text_index():
-    """
-    Creates the table: fulltxt, using the module FTS3
-    to allow full text search in the database
 
     """
 
-    #  Create Virtual table fulltxt( wordID, Word, itemID
-    sql1 = """
-    CREATE VIRTUAL TABLE IF NOT EXISTS fulltxt USING FTS3  
-    ( 
-    wordID   INTEGER,
-    word     TEXT,
-    itemID   INTEGER
-    ) 
-    ;
-    """
-    
-    # Populate virtual table 
-    sql2 = """
-    INSERT     INTO fulltxt 
-    SELECT     fulltextWords.wordID, fulltextWords.word , fulltextItemWords.itemID
-    FROM       fulltextWords , fulltextItemWords
-    WHERE      fulltextWords.wordID = fulltextItemWords.wordID
-    ;
-    """
-    
-    cur.execute(sql1)   
-    cur.execute(sql2)
-    conn.commit()
+    def __init__(self, database, storage):
+        """
+        :param database:  Datbase file
+        :param storage:   Storage directory
+        :return:
+        :type database:   str
+        :type storage:    str
+        :rtype : None
+        """
+        self.database = database
+        self.storage = storage
 
-def text_search(text):
-
-    sql = """
-
-    SELECT   itemID FROM fulltxt 
-    WHERE  word MATCH ?
-    GROUP BY itemID
-
-    """
-
-    
-    itemids = [ ]
-
-    query=cur.execute(sql,(text,))   
-    rows =query.fetchall()
-
-#    print rows
-
-    for row in rows:
-        itemid = row[0]
-        itemids = itemids + [itemid]
-
-    return itemids           
-
-def create_itemName_view(): 
-    """
-    Create viw:  item_names
-
-    """
-    
-    sql = """
-        CREATE VIEW item_names AS 
-
-        SELECT DISTINCT itemData.itemID,  itemDataValues.value  
-        FROM      itemData, itemDataValues  , fields
-        WHERE     itemData.valueID =  itemDataValues.valueID AND 
-                  fields.fieldID = itemData.fieldID AND itemData.fieldID=110 
-        ORDER BY  itemID    
-
-    """
-    query=cur.execute(sql)   
-    conn.commit()
-
-#create_itemName_view();
-
-def  get_tags():
-    """
-    Get all zotero tags
-
-    @type  void
-    @param void:  Command that will be executed and returned output
-    @rtype     :  List 
-    @returns  :  [ tagID , tags ]
+        logger.warn("Opening database database=%s database=%s" % (database, storage))
 
 
-    """
+    def open_database(self):
+        """
+        :return: conn, cur
+        First function of this module that needs to be executed
+        open a connection to zotero database
 
-    sql_query_tags= """
-    SELECT tagID, name  FROM  tags ; 
-    """
-
-    query=cur.execute(sql_query_tags )  
-    rows=query.fetchall()
-
-
-    ##print rows
-    return rows
-
-def get_tagname(tagid):
-    
-    sql= """
-    SELECT name  
-    FROM  tags
-    WHERE tagid = ?    
-    ; 
-    """
-
-    query=cur.execute(sql,(tagid,))  
-    rows=query.fetchall()
-
-    if rows != []:
-        rows = rows[0]
-        rows = rows[0]
-        return rows 
-
-    return []
-
-def get_collection_name(collid):
-    
-    sql= """
-    SELECT collectionName  
-    FROM  collections
-    WHERE collectionID = ?    
-    ; 
-    """
-
-    query=cur.execute(sql,(collid,))  
-    rows=query.fetchall()
-
-    if rows != []:
-        rows = rows[0]
-        rows = rows[0]
-        return rows 
-
-    return []
-
-def get_collections():
-    """
-    Get all collections and return in a list
-
-    """
-
-    sql="""
-    SELECT  collectionID, collectionName  FROM collections ;
-    """ 
-    query=cur.execute(sql)  
-    rows=query.fetchall()
-
-    return rows
-
-def get_collections_items():
-    """
-    Get all items from all collections.
-
-    Returns [ collectionDI, collectionName, colllectionItem ]
-
-    """
-
-    sql= """
-    SELECT collections.collectionID,  collections.collectionName,  collectionItems.itemID 
-    FROM collections, collectionItems
-    WHERE  collections.collectionID =  collectionItems.collectionID    ;
-    """
-
-    query = cur.execute(sql)
-    rows = query.fetchall()
-    return rows
-
-def get_item_from_collections( collid ):
-    """
-    Return list of all itemID from some collection, 
-    given the collectionID
-
-    """
-
-    sql= """
-    SELECT  collectionItems.itemID 
-    FROM collections, collectionItems
-    WHERE      collections.collectionID =  collectionItems.collectionID 
-           AND collectionItems.collectionID = ? ;       
-    """                        
-
-    query=cur.execute(sql,(collid,))        
-    rows=query.fetchall()       
-
-    itemids = [ ]
+        """
+        # Connect to database file
+        logger.debug("Opening database = %s" % self.database)
+        conn = sqlite3.connect(self.database, timeout=10)
+        cur = conn.cursor()
+        return conn, cur
 
 
-    for row in rows:
-        itemid = row[0]
-        itemids = itemids + [itemid]
+    def close_database(self, conn):
+        conn.close()
+        return 0
 
-    return itemids
+    def create_text_index(self):
+        """
+        Creates the table: fulltxt, using the module FTS3
+        to allow full text search in the database
 
-def get_subcollections(collid):
-    """
-    Returns the subcollection IDs of a collection
+        """
 
-    collid: Collection ID
+        #  Create Virtual table fulltxt( wordID, Word, itemID
+        sql1 = """
+        CREATE VIRTUAL TABLE IF NOT EXISTS fulltxt USING FTS3
+        (
+        wordID   INTEGER,
+        word     TEXT,
+        itemID   INTEGER
+        )
+        ;
+        """
 
-    Returns a list of ( collectionID, CollectionName )
+        # Populate virtual table
+        sql2 = """
+        INSERT     INTO fulltxt
+        SELECT     fulltextWords.wordID, fulltextWords.word , fulltextItemWords.itemID
+        FROM       fulltextWords , fulltextItemWords
+        WHERE      fulltextWords.wordID = fulltextItemWords.wordID
+        ;
+        """
+        conn, cur = self.open_database()
 
-    [ ( collid1, coll1_name ) ,  ( collid2, coll2name ), .... ]
+        cur.execute(sql1)
+        cur.execute(sql2)
+        conn.commit()
+        conn.close()
 
-    """
+    def text_search(self, text):
 
-    sql= """
-        SELECT 	collectionID, collectionName 
+        sql = """
+
+        SELECT   itemID FROM fulltxt
+        WHERE  word MATCH ?
+        GROUP BY itemID
+
+        """
+        conn, cur = self.open_database()
+
+        itemids = []
+
+
+        query = cur.execute(sql, (text,))
+        rows = query.fetchall()
+
+        #    print rows
+
+        for row in rows:
+            itemid = row[0]
+            itemids = itemids + [itemid]
+
+        conn.close()
+        return itemids
+
+
+    def create_itemName_view(self):
+        """
+        Create viw:  item_names
+
+        """
+
+        sql = """
+            CREATE VIEW item_names AS
+
+            SELECT DISTINCT itemData.itemID,  itemDataValues.value
+            FROM      itemData, itemDataValues  , fields
+            WHERE     itemData.valueID =  itemDataValues.valueID AND
+                      fields.fieldID = itemData.fieldID AND itemData.fieldID=110
+            ORDER BY  itemID
+
+        """
+        conn, cur = self.open_database()
+        cur.execute(sql)
+        conn.commit()
+
+    #create_itemName_view();
+
+    def get_tags(self):
+        """
+        Get all zotero tags
+
+        @type  void
+        @param void:  Command that will be executed and returned output
+        @rtype     :  List
+        @returns  :  [ tagID , tags ]
+
+
+        """
+        sql_query_tags = """
+        SELECT tagID, name  FROM  tags ;
+        """
+        conn, cur = self.open_database()
+        query = cur.execute(sql_query_tags)
+        rows = query.fetchall()
+        conn.close()
+
+        return rows
+
+    def get_tagname(self, tagid):
+
+        sql = """
+        SELECT name
+        FROM  tags
+        WHERE tagid = ?
+        ;
+        """
+        conn, cur = self.open_database()
+
+        query = cur.execute(sql, (tagid,))
+        rows = query.fetchall()
+
+        if rows != []:
+            rows = rows[0]
+            rows = rows[0]
+            return rows
+        conn.close()
+        return []
+
+    def get_collection_name(self, collid):
+
+        sql = """
+        SELECT collectionName
+        FROM  collections
+        WHERE collectionID = ?
+        ;
+        """
+        conn, cur = self.open_database()
+        query = cur.execute(sql, (collid,))
+        rows = query.fetchall()
+
+        if rows != []:
+            rows = rows[0]
+            rows = rows[0]
+            return rows
+        conn.close()
+        return []
+
+    def get_collections(self):
+        """
+        Get all collections and return in a list
+
+        """
+
+        sql = """
+        SELECT  collectionID, collectionName  FROM collections ;
+        """
+        conn, cur = self.open_database()
+        query = cur.execute(sql)
+        rows = query.fetchall()
+        conn.close()
+        return rows
+
+    def get_collections_items(self):
+        """
+        Get all items from all collections.
+
+        Returns [ collectionDI, collectionName, colllectionItem ]
+
+        """
+
+        sql = """
+        SELECT collections.collectionID,  collections.collectionName,  collectionItems.itemID
+        FROM collections, collectionItems
+        WHERE  collections.collectionID =  collectionItems.collectionID    ;
+        """
+        conn, cur = self.open_database()
+        query = cur.execute(sql)
+        rows = query.fetchall()
+        conn.close()
+        return rows
+
+    def get_item_from_collections(self, collid):
+        """
+        Return list of all itemID from some collection,
+        given the collectionID
+
+        """
+
+        sql = """
+        SELECT  collectionItems.itemID
+        FROM collections, collectionItems
+        WHERE      collections.collectionID =  collectionItems.collectionID
+               AND collectionItems.collectionID = ? ;
+        """
+        conn, cur = self.open_database()
+
+        query = cur.execute(sql, (collid,))
+        rows = query.fetchall()
+
+        itemids = []
+
+        for row in rows:
+            itemid = row[0]
+            itemids = itemids + [itemid]
+
+        conn.close()
+
+        return itemids
+
+    def get_subcollections(self, collid):
+        """
+        Returns the subcollection IDs of a collection
+
+        collid: Collection ID
+
+        Returns a list of ( collectionID, CollectionName )
+
+        [ ( collid1, coll1_name ) ,  ( collid2, coll2name ), .... ]
+
+        """
+
+
+        sql = """
+            SELECT 	collectionID, collectionName
+            FROM    collections
+            WHERE 	parentCollectionID = ?
+        """
+        conn, cur = self.open_database()
+        query = cur.execute(sql, (collid,))
+        rows = query.fetchall()
+
+        conn.close()
+        logger.debug("rows = %s" % rows)
+        return rows
+
+    def get_collections_parents(self):
+        sql = """
+        SELECT collectionID, CollectionName
         FROM    collections
-        WHERE 	parentCollectionID = ? 
-    """                        
+        WHERE parentCollectionID IS NULL ;
+        """
+        conn, cur = self.open_database()
+
+        query = cur.execute(sql)
+        rows = query.fetchall()
+        conn.close()
+        return rows
+
+    def list_tags(self):
+        """
+        #print all zotero tags
 
-    query=cur.execute(sql,(collid,))        
-    rows=query.fetchall()      
-    
-    print rows
-    return rows
+        @type  void
+        @param void
+        @rtype void
 
-def get_collections_parents():
-    sql="""    
-    SELECT collectionID, CollectionName 
-    FROM    collections
-    WHERE parentCollectionID IS NULL ;
-    """ 
-    query=cur.execute(sql)  
-    rows=query.fetchall()
+        """
+        rows = self.get_tags()
 
-    return rows                 
+        for row in rows:
+            tagID, tag = row
+            print str(tagID) + "\t" + tag
 
-def list_tags():
-    """
-    #print all zotero tags
+    def list_collections(self):
+        """
+        print all Zotero collections
 
-    @type  void
-    @param void
-    @rtype void 
+        """
 
-    """
-    rows = get_tags()
+        rows = self.get_collections()
 
-    for row in rows:
-        tagID, tag = row
-        #print str(tagID) + "\t" + tag
+        for row in rows:
+            collID, collection = row
+            #print str(collID) + "\t" + collection
 
-def list_collections():
-    """
-    #print all Zotero collections
+    def get_item_ids(self):
+        """
+        Return the itemID of all items
+        """
 
-    """
+        sql = """
+        SELECT itemID FROM items
+        ORDER BY itemID
+        ;
+        """
+        conn, cur = self.open_database()
+        itemids = []
 
-    rows = get_collections()
+        query = cur.execute(sql)
+        rows = query.fetchall()
 
-    for row in rows:
-        collID, collection = row
-        #print str(collID) + "\t" + collection
+        #    print rows
 
-def get_item_ids():
-    """
-    Return the itemID of all items
-    """
+        for row in rows:
+            itemid = row[0]
+            itemids = itemids + [itemid]
+
+        conn.close()
+        return itemids
 
-    sql = """
-    SELECT itemID FROM items 
-    ORDER BY itemID
-    ;
-    """
+    def get_items(self):
+        """
+        Get all items in zotero library
 
-    itemids = [ ]
+        """
 
-    query=cur.execute(sql)   
-    rows =query.fetchall()
+        sql = """
+        SELECT DISTINCT itemData.itemID,  itemDataValues.value
+        FROM      itemData, itemDataValues  , fields
+        WHERE     itemData.valueID =  itemDataValues.valueID AND
+                  fields.fieldID = itemData.fieldID AND itemData.fieldID=110
+        ORDER BY  itemID
+        ;
+        """
 
-#    print rows
+        conn, cur = self.open_database()
+        query = cur.execute(sql)
+        rows = query.fetchall()
+        conn.close()
+        return rows
+
+    def list_items(self):
+        """
+        Print all items in zotero library.
+        """
 
-    for row in rows:
-        itemid = row[0]
-        itemids = itemids + [itemid]
+        rows = self.get_items()
 
-    return itemids         
+        for row in rows:
+            itemID, itemName = row
+            print str(itemID) + "\t" + itemName
 
-def get_items():
-    """
-    Get all items in zotero library
+    def filter_tag(self, tagid):
+        """
+           Filter item by tags
+           """
+
+        sql = """
+           SELECT itemTags.itemID
+           FROM itemTags
+           WHERE itemTags.tagID = ?
+           ;
+
+           """
+        conn, cur = self.open_database()
+
+        query = cur.execute(sql, (tagid,))
+        rows = query.fetchall()
+
+        itemids = []
+
+        for row in rows:
+            itemid = row[0]
+            itemids = itemids + [itemid]
 
-    """
+        conn.close()
+        return itemids
 
-    sql = """
-    SELECT DISTINCT itemData.itemID,  itemDataValues.value  
-    FROM      itemData, itemDataValues  , fields
-    WHERE     itemData.valueID =  itemDataValues.valueID AND 
-              fields.fieldID = itemData.fieldID AND itemData.fieldID=110 
-    ORDER BY  itemID
-    ;
-    """
+    def get_item_data(self, itemid):
 
-    query=cur.execute(sql)  
-    rows=query.fetchall()
+        sql = """
 
-    return rows
+        SELECT  fields.fieldName , itemDataValues.value
 
-def list_items():
-    """
-    #print all items in zotero library.
+        FROM      itemData, itemDataValues  , fields
 
-    """
+        WHERE   itemData.valueID =  itemDataValues.valueID AND
+            fields.fieldID = itemData.fieldID  	   AND
+            itemData.itemID = ?
 
-    
-    rows = get_items()
+        """
+        conn, cur = self.open_database()
+        query = cur.execute(sql, (itemid,))
+        rows = query.fetchall()
+        conn.close()
+        return rows
 
-    for row in rows:
-        itemID , itemName = row
-        #print str(itemID) + "\t" + itemName
+    def list_item_data(self, itemid):
 
-def filter_tag(tagid):
-       """
-       Filter item by tags
-       """
+        rows = self.get_item_data(itemid)
 
-
-       sql = """
-       SELECT itemTags.itemID  
-       FROM itemTags
-       WHERE itemTags.tagID = ?
-       ;
+        for row in rows:
+            data_type, value = row
+            print data_type + "\t\t" + value + "\n"
 
-       """
+    def get_item_attachment(self, itemid):
+        sql = """
+        SELECT    items.key, itemAttachments.path
+        FROM      items,     itemAttachments
+        WHERE   items.itemID = itemAttachments.itemID AND items.itemID = ?
+        ORDER BY items.itemID
+        ;
+        """
+        conn, cur = self.open_database()
+        query = cur.execute(sql, (itemid,))
+        row = query.fetchall()
+        conn.close()
 
-       query=cur.execute(sql,(tagid,))        
-       rows=query.fetchall()
+        #print row
 
-       itemids = []
+        if len(row) != 0:
+            dirr, name = row[0]
 
-       for row in rows:
-           itemid = row[0]
-           itemids = itemids + [itemid]
+            #print type(dirr)
+            #print type (name)
 
-       return itemids     
+            if name is not None:
+                name = name.split("storage:")[1]
 
-def get_item_data(itemid):
+                #print "trace 1"
+            else:
+                #print "trace2"
+                return -1
 
-    sql = """
+            if dirr is not None:
+                #print "trace 3"
+                #ffile = STORAGE_PATH + dirr + "/" + name
+                ffile = os.path.join(STORAGE_PATH, dirr, name)
+                print ffile
+            else:
+                return -1
 
-    SELECT  fields.fieldName , itemDataValues.value  
+            return ffile
 
-    FROM      itemData, itemDataValues  , fields
+    def get_attachment2(self, itemid):
 
-    WHERE   itemData.valueID =  itemDataValues.valueID AND 
-        fields.fieldID = itemData.fieldID  	   AND
-        itemData.itemID = ?
+        sql = """
+        SELECT * FROM (
+        SELECT items.itemID,  items.key, itemAttachments.path,  itemAttachments.mimeType, itemDataValues.value
+        FROM items
+        LEFT JOIN itemAttachments
+        ON itemAttachments.itemID = items.itemID
+        LEFT JOIN itemData
+        ON  itemData.itemID = items.itemID  AND itemData.fieldID=110
+        LEFT JOIN itemDataValues
+        ON itemDataValues.valueID = itemData.valueID
+        ORDER BY items.itemID
+        )
+        WHERE itemID > 1 AND itemID = ? ;
 
-    """
-    query=cur.execute(sql,(itemid,))   
-    rows=query.fetchall()
+        """
+        conn, cur = self.open_database()
+        query = cur.execute(sql, (itemid,))
+        rows = query.fetchall()
+        conn.close()
 
-    return rows
+        ##print rows
 
-def list_item_data(itemid):
+        if rows == []:
+            return None
 
-    rows = get_item_data(itemid)
+        data = rows[0]
 
-    for row in rows:
-        data_type , value = row
-        print data_type + "\t\t" + value + "\n"
+        key = data[1]
 
-def get_item_attachment(itemid):
-    sql = """
-    SELECT    items.key, itemAttachments.path 
-    FROM      items,     itemAttachments
-    WHERE   items.itemID = itemAttachments.itemID AND items.itemID = ?
-    ORDER BY items.itemID  
-    ;    
-    """
-    query=cur.execute(sql,(itemid,))
-    row=query.fetchall()
+        path = data[2]
 
-    #print row
+        mtype = data[3]
 
-    if len(row) != 0:
-        dirr, name = row[0]
+        title = data[4]
 
-        #print type(dirr)
-        #print type (name)
+        #if name is None:
 
-        if name is not None:
-            name = name.split("storage:")[1]
+        #    #print "tr1"
+        #    return None
 
-            #print "trace 1"
-        else:
-            #print "trace2"
-            return -1
-        
-        if dirr is not None:
-            #print "trace 3"
-            #ffile = STORAGE_PATH + dirr + "/" + name
-            ffile =  os.path.join(STORAGE_PATH,dirr,name)
-            print ffile
-        else:
-            return -1
+        if title is None:
+            return None
 
-        return ffile
+        if path is None:
+            #        #print "tr2"
 
-def get_attachment2(itemid):
-    
-    sql= """ 
-    SELECT * FROM (
-    SELECT items.itemID,  items.key, itemAttachments.path,  itemAttachments.mimeType, itemDataValues.value
-    FROM items
-    LEFT JOIN itemAttachments 
-    ON itemAttachments.itemID = items.itemID   
-    LEFT JOIN itemData
-    ON  itemData.itemID = items.itemID  AND itemData.fieldID=110
-    LEFT JOIN itemDataValues 
-    ON itemDataValues.valueID = itemData.valueID
-    ORDER BY items.itemID 
-    )
-    WHERE itemID > 1 AND itemID = ? ;
+            data2 = self.get_attachment(itemid + 1);
+            #        #print "data2 ="
+            #        #print data2
+            return data2
 
-    """
-
-    query = cur.execute(sql,(itemid,))
-    rows = query.fetchall()
-
-    ##print rows
-
-    if rows == []:
-        return None
-
-    data = rows[0]
-
-    key  = data[1]
-
-    path = data[2]
-
-    mtype = data[3]
-
-    title = data[4]
-
-    #if name is None:
-
-    #    #print "tr1"
-    #    return None
-
-    if title is None:
-        return None
-
-    if path is None:
-#        #print "tr2"
-
-        data2= get_attachment(itemid+1);
-#        #print "data2 ="
-#        #print data2
-        return data2
-
-    ##print "tr3"
-
-    fname = path.split("storage:")[1]
-    PATH = os.path.join(STORAGE_PATH, key,fname)
-    ##print PATH
-
-    return PATH
-
-def get_attachment( itemid ):
-
-    sql = """
-    SELECT  path,  key FROM
-    (
-    SELECT  itemAttachments.itemID, itemAttachments.sourceItemID, itemAttachments.path , items.key
-    FROM itemAttachments, items
-    WHERE  itemAttachments.itemID  = items.itemID   
-    ) 
-    WHERE itemID= ?  OR sourceItemID = ? ;
-
-    """
-
-
-    query = cur.execute(sql,(itemid,itemid))
-    rows = query.fetchall()  
-
-    #print "item= " + str(itemid)
-    #print rows
-
-
-    if rows == []:
-        return None
-    else:
-
-        #print "------------"
-        path, key = rows[0]
-        #print itemid
-        #print "path = " + path 
-        #print "key = "  + key
-
-      
-
-        if path == None:
-            if len(rows) == 1:
-                return None 
-
-            path,key = rows[1]
-
+        ##print "tr3"
 
         fname = path.split("storage:")[1]
+        PATH = os.path.join(STORAGE_PATH, key, fname)
+        ##print PATH
 
-        PATH = os.path.join(STORAGE_PATH, key,fname)
 
         return PATH
-#    return rows
+
+    def get_attachment(self, itemid):
+
+        sql = """
+        SELECT  path,  key FROM
+        (
+        SELECT  itemAttachments.itemID, itemAttachments.sourceItemID, itemAttachments.path , items.key
+        FROM itemAttachments, items
+        WHERE  itemAttachments.itemID  = items.itemID
+        )
+        WHERE itemID= ?  OR sourceItemID = ? ;
+
+        """
+        conn, cur = self.open_database()
+        query = cur.execute(sql, (itemid, itemid))
+        rows = query.fetchall()
+        conn.close()
+
+        #print "item= " + str(itemid)
+        #print rows
 
 
-# Close database connection
-#conn.close()
+        if rows == []:
+            return None
+        else:
 
-if __name__=="__main__":
+            #print "------------"
+            path, key = rows[0]
+            #print itemid
+            #print "path = " + path
+            #print "key = "  + key
 
-    #print "Testing"
 
-    open_database(DATABASE2);
-    #list_items();
+
+            if path == None:
+                if len(rows) == 1:
+                    return None
+
+                path, key = rows[1]
+
+            fname = path.split("storage:")[1]
+
+            PATH = os.path.join(STORAGE_PATH, key, fname)
+
+            return PATH
+
+
+    #    return rows
+
+
+    # Close database connection
+    #conn.close()
+
+    # if __name__ == "__main__":
+    #     #print "Testing"
+    #
+    #     open_database(DATABASE2);
+    #     #list_items();
+
+
+
+def main():
+
+    zotero = Zotero(Config.DATABASE, Config.STORAGE)
+
+    print zotero.list_items()
+
+if __name__ == "__main__":
+    main()
 
 
