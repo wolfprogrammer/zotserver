@@ -22,6 +22,7 @@ from Logger import logger
 
 class Zotero():
     """
+    Open zotero database and query the data.
 
     """
 
@@ -470,7 +471,7 @@ class Zotero():
             if dirr is not None:
                 #print "trace 3"
                 #ffile = STORAGE_PATH + dirr + "/" + name
-                ffile = os.path.join(STORAGE_PATH, dirr, name)
+                ffile = os.path.join(self.storage, dirr, name)
                 print ffile
             else:
                 return -1
@@ -533,7 +534,7 @@ class Zotero():
         ##print "tr3"
 
         fname = path.split("storage:")[1]
-        PATH = os.path.join(STORAGE_PATH, key, fname)
+        PATH = os.path.join(self.storage, key, fname)
         ##print PATH
 
 
@@ -580,7 +581,7 @@ class Zotero():
 
             fname = path.split("storage:")[1]
 
-            PATH = os.path.join(STORAGE_PATH, key, fname)
+            PATH = os.path.join(self.storage, key, fname)
 
             return PATH
 

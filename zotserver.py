@@ -4,26 +4,26 @@
 """
 
 Module program description
-	1. This program does
-	2. The user interface is ....
+1. This program does
+2. The user interface is ....
 
 """
-
-PORT = 8080  # : Sets the default port
-
-HOST = '0.0.0.0'  # : Accept anyhost
-# HOST='127.0.0.1' # Local host only
-
-# DEBUG= True     #: True - Debug ON
-DEBUG = False
-
+import os
+from Config import Config
 from bottle import static_file, abort, redirect
 from bottle import route, run, debug
 from bottle import template, request, response, post, get
 from bottle import static_file
-from zoterotool import *
+from zoterotool import Zotero
 
-open_database("zotero.sqlite");
+from Logger import logger
+
+
+PORT = Config.PORT
+HOST = Config.HOST
+DEBUG = Config.DEBUG
+
+zotero = Zotero(Config.DATABASE, Config.STORAGE)
 
 
 def link_tpl(url, name, linktofile=False, newtab=False):
@@ -36,7 +36,6 @@ def link_tpl(url, name, linktofile=False, newtab=False):
 
     newtab     = False : Open the links in same tab/window
                  True  : Force to open links in new tab
-
     """
 
     if linktofile == True:
@@ -56,21 +55,17 @@ def get_item_link(itemid):
 
     """
     # Get item attachment path
-    #path =  get_item_attachment(itemid)
-    path = get_attachment(itemid)
+    # path =  get_item_attachment(itemid)
+    path = zotero.get_attachment(itemid)
 
     if path is not None:
-        #path = os.path.join("/files", path)
-        #path = "/files" + path
+        # path = os.path.join("/files", path)
+        # path = "/files" + path
 
         name = os.path.split(path)[1]
         link = link_tpl(path, name, linktofile=True, newtab=True)
-        #print link
-
-
-        #link = '<a href="' + path + '">' + "file" + "</a>"
-
-
+        # print link
+        # link = '<a href="' + path + '">' + "file" + "</a>"
         return link
 
     return None
@@ -122,7 +117,7 @@ def item_data_html(itemid):
     Returns item data in html format
 
     """
-    data = get_item_data(itemid)
+    data = zotero.get_item_data(itemid)
 
     html = ""
 
@@ -139,7 +134,7 @@ def format_query(query):
 
     """
     words = query.split()
-    #    print words
+    # print words
 
     text = ""
     for idx in range(len(words) - 1):
@@ -167,21 +162,22 @@ def html_collections_link(collections):
 
         html = html + link + "<br />\n"
 
-    #print html
+    # print html
     return html
 
 
 @route('/index')
 @route('/')
 def index():
-    #link_list   =  link_list_tpl(\
-    #[\
-    #[ "/items", "Items"             ] ,\
-    #[ "/tags", "Tags"               ] ,\
-    #[ "/collections", "Collections" ] ,\
-    #[ "/status","Server Status"     ] ,\
-    #[ "/help","Help"                ] ])
+    # link_list   =  link_list_tpl(\
+    # [\
+    # [ "/items", "Items"             ] ,\
+    # [ "/tags", "Tags"               ] ,\
+    # [ "/collections", "Collections" ] ,\
+    # [ "/status","Server Status"     ] ,\
+    # [ "/help","Help"                ] ])
 
+    logger.warn("ROUTE: /index")
 
     search_form = '''
     <br />
@@ -205,12 +201,10 @@ def index():
 
 @post('/updatelib')
 def updatelibrary():
-    global conn
-
-    os.system("./update-data.sh")
-    close_database()
-    open_database("zotero.sqlite");
-    create_text_index()
+    logger.warn("ROUTE: /updatelib")
+    # os.system("./update-data.sh")
+    # open_database("zotero.sqlite");
+    # create_text_index()
     redirect("/index")
 
 
@@ -222,7 +216,8 @@ def all_items():
     link.
 
     """
-    items = get_item_ids()
+    logger.warn("ROUTE: /items")
+    items = zotero.get_item_ids()
 
     html = html_item_link_list(items)
 
@@ -243,8 +238,8 @@ def all_collections_():
     ...
 
     """
-
-    collections = get_collections()
+    logger.warn("ROUTE: /all_collections")
+    collections = zotero.get_collections()
 
     html = html_collections_link(collections)
 
@@ -257,10 +252,9 @@ def collections_():
     Show links to the parent collections
 
     """
-    collections = get_collections_parents()
-
+    logger.warn("ROUTE: /collections")
+    collections = zotero.get_collections_parents()
     html = html_collections_link(collections)
-
     return template("base.html", subtitle="Collections", content=html, backlink="index")
 
 
@@ -271,12 +265,14 @@ def show_collection(collid):
     #
     # subcollections =  [ ( collIDx, collNameX ), ( ....) ... ]
     #
-    subcollections = get_subcollections(collid)
+    logger.warn("ROUTE: /collectionid/<collid:int> = %s" % collid )
+
+    subcollections = zotero.get_subcollections(collid)
     html_subcolls = html_collections_link(subcollections)
 
-    collname = get_collection_name(collid)
+    collname = zotero.get_collection_name(collid)
 
-    items = get_item_from_collections(collid)
+    items = zotero.get_item_from_collections(collid)
 
     html_items = html_item_link_list(items)
 
@@ -293,32 +289,34 @@ def retrive_file(itemid):
     Retrives file that matches itemid
 
     """
+    logger.warn("ROUTE: /fileid = %s" % itemid)
 
-    path = get_attachment(itemid)
+    path = zotero.get_attachment(itemid)
     if path is not None:
         path_, file_ = os.path.split(path)
 
-        #print path_
-        #print file_
+        # print path_
+        # print file_
 
         return static_file(file_, path_, download=file_)
-    #       return "File was  " + str(itemid) + " " + path
+    # return "File was  " + str(itemid) + " " + path
     else:
         return "Error: File not found"
 
 
 @route('/files/<path:path>')
 def callback(path):
-    #path=os.path.join("/",path)
-    #print path
+    logger.warn("ROUTE: /file = %s" % path)
+    # path=os.path.join("/",path)
+    # print path
 
-    #print "path =" + path
+    # print "path =" + path
     if os.path.isfile(path):
         path_, file_ = os.path.split(path)
 
-        #print "retriving"
-        #print "path " + path_
-        #print "filename =" + file_
+        # print "retriving"
+        # print "path " + path_
+        # print "filename =" + file_
 
         return static_file(file_, path_)
     else:
@@ -333,15 +331,15 @@ def show_tags():
     related to this tag will be showed to the user
     
     """
-
+    logger.warn("ROUTE: /tags")
     html = ""
 
-    tags = get_tags()
+    tags = zotero.get_tags()
     for tag in tags:
         tagid, tagname = tag
 
         url = "/tagid/" + str(tagid)
-        #print url
+        # print url
         link = link_tpl(url, tagname)
 
         html = html + link + "<br />\n"
@@ -349,27 +347,24 @@ def show_tags():
     return template("base.html", subtitle="Tags", content=html, backlink="index")
 
 
-#    return html
-
-
 @route('/tagid/<tagid:int>')
 def show_tagid(tagid):
-    tagname = get_tagname(tagid)
-    items = filter_tag(tagid)
-    html = html_item_link_list(items)
+    logger.warn("ROUTE: /tagid = %s" % tagid)
 
+    tagname = zotero.get_tagname(tagid)
+    items = zotero.filter_tag(tagid)
+    html = html_item_link_list(items)
     subtilte_ = "Tag: " + tagname
     return template("base.html", subtitle=subtilte_, content=html, backlink="tags")
 
+# @route('/query')
+# def query_libray(query):
+# """
+# Full text search in the database
 
-#@route('/query')
-#def query_libray(query):
-#"""
-#Full text search in the database
+# http://<base url>/search-expression
 
-#http://<base url>/search-expression
-
-#"""
+# """
 
 ##    itemids = text_search(query)
 ##    html = html_item_link_list( itemids )
@@ -384,6 +379,7 @@ def search_library():
     query = request.params.get('q')
     last_query = query
 
+    logger.warn("ROUTE: /Search")
     print "query " + query
 
     html = ""
@@ -393,7 +389,7 @@ def search_library():
 
     if query != "":
         query = format_query(query)
-        itemids = text_search(query)
+        itemids = zotero.text_search(query)
         html = html_item_link_list(itemids)
 
     search_form = '''
@@ -420,6 +416,7 @@ def status():
     Shows the status of the server
     """
     import subprocess
+    logger.warn("ROUTE: /status")
 
     response.content_type = "text/plain"
     return subprocess.check_output(["cat", "/tmp/zotserver.log"])
@@ -427,12 +424,13 @@ def status():
 
 @route("/help")
 def help():
-    html = """
+    logger.warn("ROUTE: help")
+
+    html = \
+        """
     The ZOTERO SERVER - Is a http web server that uses bottle framework. <br />
     This simple and lightweight web server allows to access the Zotero   <br />
     data from anywhere, any device, tablet, smartphone, PC ...           <br />
-    
-
     """
 
     return template("base.html", subtitle="HELP", content=html, backlink="index")
@@ -440,15 +438,16 @@ def help():
 
 @get('/favicon.ico')
 def get_favicon():
+    logger.warn("ROUTE: /favicon")
     return static_file('favicon.ico', ".")
 
 
 def main():
+    data = {"PORT": PORT, "HOST": HOST}
+    logger.warn("Starting server %s" % data)
     run(host=HOST, port=PORT, debug=DEBUG, reloader=True)
 
 
 # Run the server 
 if __name__ == "__main__":
     main()
-          
-

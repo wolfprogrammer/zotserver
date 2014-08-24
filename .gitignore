@@ -13,3 +13,4 @@ storage/
 *.jpe
 *.sqlite
 *.png
+.idea
