@@ -1,46 +1,53 @@
 #!/bin/bash
 #
 #  This script controls the zotero-server as a daemon.
+#  requires curl
 #
-#  ZOTSERVER_HOME = Directory whre is the "zoteroserver.py"
+#  Debian/Ubuntu: apt-get install curl
 #
-#
-#ZOTSERVER_HOME="$HOME/zoterotool2"
-ZOTSERVER_HOME="$PWD"                # Current directory
+#-------------------------------------------------------
+
+#---------- S E T T I N G S ---------------------------#
+
+# Absolute path to installation directory
+ZOTSERVER_HOME=/home/tux/PycharmProjects/zotserver
+PIDFILE="/tmp/zotserver.pid"
+SERVERPORT=8080
+
+#-----------------------------------------------------#
 
 # Get the current script path
 _script="$(readlink -f ${BASH_SOURCE[0]})"
+#echo "Script absolute path "$_script
 
 # Get the current script directory
 _base="$(dirname $_script)"
+#echo "Script Directory "$_base
 
+# Default directory
 BROWSER=firefox
 
-#echo $_script
-#echo $_base
-
-
-
+#
+# Assume that the zotserver.py is in the
+# same directory of this script
+#
 cd $ZOTSERVER_HOME
-
 STARTCMD="python  zotserver.py"
-LOGFILE="/tmp/zotserver.log" 
-PIDFILE="/tmp/zotserver.pid"
+
 #exit 0
 
 start() {
  echo "Starting Python Zotero Server on port 8080"
 
-	nohup $STARTCMD  2>&1 > $LOGFILE &
-	echo $! > $PIDFILE
-	$BROWSER localhost:8080
+	nohup $STARTCMD   2>&1 > /dev/null &
+	#echo $! > $PIDFILE
+	#cat $PIDFILE
+	#$BROWSER localhost:8080
 
 }
 stopp() {
 	echo "Stopping Zotero Server"
-	kill  `cat $PIDFILE`	
-	echo "Stopped .."  >  $LOGFILE
-
+    curl 'http://127.0.0.1:'$SERVERPORT/shutdown2server > /dev/null
 }
 status() {
  	echo "Status of Zotero Server"
@@ -55,7 +62,6 @@ reload() {
     start
 
 }
-
 
 case "$1" in
  start)
@@ -73,7 +79,7 @@ case "$1" in
 
  *)
  echo "Zotero Server Daemon"
- echo "Usage: track_ip_service {start|stop|status|reload}"
+ echo "Usage: $(basename $0) {start|stop|status|reload}"
  exit 1
  esac
 exit 0 

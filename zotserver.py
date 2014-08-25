@@ -483,26 +483,18 @@ def get_favicon():
     return static_file(favicon, ".")
 
 
-import datetime
+@app.route('/shutdown2server')
+def route_shutdown():
+    """
+    Route to Kill Server Process
+    :return:
+    """
+    import os
+    ip=request.environ.get('REMOTE_ADDR')
+    # the server can only be shutdown from localhost
+    if ip == '127.0.0.1':
+        os._exit(1)
 
-# unchanged from OP
-def log_after_request():
-    try:
-        length = response.content_length
-    except:
-        try:
-            length = len(response.body)
-        except:
-            length = '???'
-    print 'MYLOG:', '{ip} - - [{time}] "{method} {uri} {protocol}" {status} {length}'.format(
-        ip=request.environ.get('REMOTE_ADDR'),
-        time=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-        method=request.environ.get('REQUEST_METHOD'),
-        uri=request.environ.get('REQUEST_URI'),
-        protocol=request.environ.get('SERVER_PROTOCOL'),
-        status=response.status_code,
-        length=length,
-    )
 
 
 class AccessLogMiddleware(object):
@@ -524,7 +516,6 @@ class AccessLogMiddleware(object):
         # log the request
         #log_after_request()
         ip=request.environ.get('REMOTE_ADDR'),
-        time=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         method=request.environ.get('REQUEST_METHOD'),
         uri=request.environ.get('REQUEST_URI'),
         protocol=request.environ.get('SERVER_PROTOCOL'),

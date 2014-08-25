@@ -187,11 +187,13 @@ LOG_SETTINGS = {
             'stream': 'ext://sys.stdout',
         },
         'file': {
-            'class': 'logging.handlers.RotatingFileHandler',
-            'level': 'NOTSET',
-            'formatter': 'detailed',
-            'filename': debug_log,
-            'mode': 'a',
+                'class': 'logging.handlers.RotatingFileHandler',
+                'level': 'NOTSET',
+                'formatter': 'request',
+                'filename': debug_log,
+                'mode': 'a',
+                'maxBytes': 10485760,
+                'backupCount': 5,
         },
         'file2': {
                 'class': 'logging.handlers.RotatingFileHandler',
@@ -205,7 +207,6 @@ LOG_SETTINGS = {
         'null':{
             'class': 'logging.NullHandler'
         }
-
     },
     # ----- FORMATTERS -----------------#
     'formatters': {
@@ -214,7 +215,7 @@ LOG_SETTINGS = {
                       '%(levelname)-8s %(message)s\n',
         },
         'request': {
-            'format': '%(asctime)s  REQUEST %(levelname)-8s %(message)s\n',
+            'format': 'REQUEST %(asctime)s   %(message)s\n',
         },
     },
 }

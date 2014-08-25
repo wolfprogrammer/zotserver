@@ -8,6 +8,7 @@ references
 latex
 scratch.py
 *.pyc
+*.pyo
 storage/
 *.jpeg
 *.jpe
