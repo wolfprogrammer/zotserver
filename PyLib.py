@@ -70,6 +70,12 @@ def get_resource_file(filen):
 
     return data
 
+def mkdir(path):
+    import os
+    if not os.path.isdir(path):
+        os.mkdir(path)
+
+
 class Container(dict):
 
     def __init__(self, **kwargs):
@@ -136,6 +142,7 @@ def parse_confFile(filename, separator="=", comment_symbol="#"):
 
 zotserverconf = os.path.join(HOME, ".zotserver.conf")
 
+
 if not os.path.exists(zotserverconf):
     print "Creating configuration file %s" % zotserverconf
     try:
@@ -146,6 +153,12 @@ if not os.path.exists(zotserverconf):
 
 Config = parse_confFile(zotserverconf)
 
+for dirp in ['log', 'storage' ]:
+    mkdir(os.path.join(Config.ZOTDIR, dirp))
+
+debug_log = os.path.join(Config.ZOTDIR, 'log', 'debug.log')
+request_log = os.path.join(Config.ZOTDIR, 'log', 'request.log')
+
 
 LOG_SETTINGS = {
     # --------- GENERAL OPTIONS ---------#
@@ -153,9 +166,16 @@ LOG_SETTINGS = {
     'disable_existing_loggers': False,
 
     # ---------- LOGGERS ---------------#
-    'root': {
-        'level': 'NOTSET',
-        'handlers': ['file', 'console'],
+
+    'loggers':{
+        'root': {
+            'level': 'NOTSET',
+            'handlers': ['console', 'file'],
+        },
+        'request': {
+            'level': 'INFO',
+            'handlers': ['console', 'file2'],
+        },
     },
 
     # ---------- HANDLERS ---------------#
@@ -166,25 +186,39 @@ LOG_SETTINGS = {
             'formatter': 'detailed',
             'stream': 'ext://sys.stdout',
         },
-
         'file': {
             'class': 'logging.handlers.RotatingFileHandler',
             'level': 'NOTSET',
             'formatter': 'detailed',
-            'filename': '/tmp/zotero.log',
-            'mode': 'w',
+            'filename': debug_log,
+            'mode': 'a',
         },
+        'file2': {
+                'class': 'logging.handlers.RotatingFileHandler',
+                'level': 'NOTSET',
+                'formatter': 'request',
+                'filename': request_log,
+                'mode': 'a',
+                'maxBytes': 10485760,
+                'backupCount': 5,
+        },
+        'null':{
+            'class': 'logging.NullHandler'
+        }
 
     },
-
     # ----- FORMATTERS -----------------#
     'formatters': {
         'detailed': {
             'format': '%(asctime)s %(module)-17s line:%(lineno)-4d %(funcName)s() ' \
-                      '%(levelname)-8s %(message)s',
+                      '%(levelname)-8s %(message)s\n',
+        },
+        'request': {
+            'format': '%(asctime)s  REQUEST %(levelname)-8s %(message)s\n',
         },
     },
 }
 
 logging.config.dictConfig(LOG_SETTINGS)
 logger = logging.getLogger("root")
+request_logger = logging.getLogger("request")

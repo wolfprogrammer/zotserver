@@ -21,7 +21,7 @@ from bottle import route, run, debug
 from bottle import template, request, response, post, get
 from bottle import static_file
 from zoterolib import Zotero
-from PyLib import Config, logger, get_resource_file, get_resource_path
+from PyLib import Config, logger, request_logger, get_resource_file, get_resource_path
 
 PORT = Config.PORT
 HOST = Config.HOST
@@ -504,7 +504,7 @@ def log_after_request():
         length=length,
     )
 
-# code I've added begins here
+
 class AccessLogMiddleware(object):
     def __init__(self, app):
         self.app = app
@@ -513,8 +513,32 @@ class AccessLogMiddleware(object):
         # call bottle and store the return value
         ret_val = self.app(e, h)
 
+        try:
+            length = response.content_length
+        except:
+            try:
+                length = len(response.body)
+            except:
+                length = '???'
+
         # log the request
-        log_after_request()
+        #log_after_request()
+        ip=request.environ.get('REMOTE_ADDR'),
+        time=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        method=request.environ.get('REQUEST_METHOD'),
+        uri=request.environ.get('REQUEST_URI'),
+        protocol=request.environ.get('SERVER_PROTOCOL'),
+        status=response.status_code,
+        length=length,
+
+        request_logger.info("ip {ip} method {method} uri {uri} protocol {protocol} status {status} lenght {lenght}".format
+                            (ip=ip,
+                             method= method,
+                             uri=uri,
+                             protocol=protocol,
+                             status=status,
+                             lenght=length
+                             ))
 
         # return bottle's return value
         return ret_val
