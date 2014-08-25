@@ -47,7 +47,7 @@ start() {
 }
 stopp() {
 	echo "Stopping Zotero Server"
-    curl 'http://127.0.0.1:'$SERVERPORT/shutdown2server > /dev/null
+    curl 'http://127.0.0.1:'$SERVERPORT/shutdown2server 2>&1 > /dev/null
 }
 status() {
  	echo "Status of Zotero Server"
