@@ -72,7 +72,7 @@ case "$1" in
  ;;
 
  *)
- echo "Python Zotero Server Daemon"       
+ echo "Zotero Server Daemon"
  echo "Usage: track_ip_service {start|stop|status|reload}"
  exit 1
  esac

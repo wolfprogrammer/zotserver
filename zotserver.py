@@ -15,24 +15,26 @@ directories and database location.
 """
 import os
 
+from bottle import Bottle
 from bottle import static_file, abort, redirect
 from bottle import route, run, debug
 from bottle import template, request, response, post, get
 from bottle import static_file
-from zoterotool import Zotero
+from zoterolib import Zotero
 from PyLib import Config, logger, get_resource_file, get_resource_path
-
 
 PORT = Config.PORT
 HOST = Config.HOST
 DEBUG = Config.DEBUG
 RELOAD = Config.RELOAD
+SERVER = Config.SERVER
 
 zotero = Zotero(Config.DATABASE, Config.STORAGE, Config.ZOTDIR)
 
 favicon = get_resource_path('templates/favicon.ico')
 base_template = get_resource_path("templates/base.html")
 
+app = Bottle()
 
 def link_tpl(url, name, linktofile=False, newtab=False):
     """
@@ -202,8 +204,13 @@ def html_collections_link(collections):
     return html
 
 
-@route('/index')
-@route('/')
+#-------------------------------#
+#         R O U T E S           #
+#-------------------------------#
+
+
+@app.route('/index')
+@app.route('/')
 def route_index():
     # link_list   =  link_list_tpl(\
     # [\
@@ -235,7 +242,7 @@ def route_index():
     return template(base_template, subtitle="Options:", content=content_, backlink="index")
 
 
-@post('/updatelib')
+@app.post('/updatelib')
 def route_updatelib():
     logger.warn("ROUTE: /updatelib")
     # os.system("./update.sh")
@@ -244,7 +251,7 @@ def route_updatelib():
     redirect("/index")
 
 
-@route('/items')
+@app.route('/items')
 def route_items():
     """
     In this page all Zotero collection
@@ -260,7 +267,7 @@ def route_items():
     return template(base_template, subtitle="Items", content=html, backlink="index")
 
 
-@route('/all_collections')
+@app.route('/all_collections')
 def route_all_collections_():
     """
     Show the user all Zotero collections 
@@ -282,7 +289,7 @@ def route_all_collections_():
     return template(base_template, subtitle="Collections", content=html, backlink="index")
 
 
-@route('/collections')
+@app.route('/collections')
 def route_collections():
     """
     Show links to the parent collections
@@ -294,7 +301,7 @@ def route_collections():
     return template(base_template, subtitle="Collections", content=html, backlink="index")
 
 
-@route('/collectionid/<collid:int>')
+@app.route('/collectionid/<collid:int>')
 def route_collectionid(collid):
     # Find all subcollections from a given collecion
     # which  collID is known.
@@ -319,7 +326,7 @@ def route_collectionid(collid):
     return template(base_template, subtitle=subtilte_, content=html, backlink="collections")
 
 
-@route('/fileid/<itemid:int>')
+@app.route('/fileid/<itemid:int>')
 def route_fileid(itemid):
     """
     Retrives file that matches itemid
@@ -341,7 +348,7 @@ def route_fileid(itemid):
         return "Error: File not found"
 
 
-@route('/files/<path:path>')
+@app.route('/files/<path:path>')
 def route_files(path):
     logger.warn("ROUTE: /files = %s" % path)
 
@@ -356,7 +363,7 @@ def route_files(path):
         logger.debug("Error: File don't exist on server.")
         return "Error: File don't exist on server."
 
-@route('/library/<path:path>')
+@app.route('/library/<path:path>')
 def route_library(path):
     logger.warn("ROUTE: /files = %s" % path)
 
@@ -374,7 +381,7 @@ def route_library(path):
         return "Error: File don't exist on server."
 
 
-@route('/tags')
+@app.route('/tags')
 def route_tags():
     """
     In this page all tags are showed
@@ -395,7 +402,7 @@ def route_tags():
     return template(base_template, subtitle="Tags", content=html, backlink="index")
 
 
-@route('/tagid/<tagid:int>')
+@app.route('/tagid/<tagid:int>')
 def route_tagid(tagid):
     logger.warn("ROUTE: /tagid = %s" % tagid)
 
@@ -405,11 +412,9 @@ def route_tagid(tagid):
     subtilte_ = "Tag: " + tagname
     return template(base_template, subtitle=subtilte_, content=html, backlink="tags")
 
-
 last_query = ""
 
-
-@route('/search')
+@app.route('/search')
 def route_search():
     query = request.params.get('q')
     last_query = query
@@ -441,11 +446,8 @@ def route_search():
     content_ = search_form + html
     return template(base_template, subtitle="Search Library", content=content_, backlink="index")
 
-
 #   return 'Your query value was: {}'.format(query)
-
-
-@route("/status")
+@app.route("/status")
 def route_status():
     """
     Shows the status of the server
@@ -456,7 +458,7 @@ def route_status():
     response.content_type = "text/plain"
     return open(Config.LOG,"r").read()
 
-@route("/help")
+@app.route("/help")
 def route_help():
     logger.warn("ROUTE: help")
 
@@ -475,30 +477,55 @@ def route_help():
     return template(base_template, subtitle="HELP", content=html, backlink="index")
 
 
-@get('/favicon.ico')
+@app.get('/favicon.ico')
 def get_favicon():
     logger.warn("ROUTE: /favicon")
     return static_file(favicon, ".")
 
-# @route('/query')
-# def query_libray(query):
-# """
-# Full text search in the database
 
-# http://<base url>/search-expression
+import datetime
 
-# """
+# unchanged from OP
+def log_after_request():
+    try:
+        length = response.content_length
+    except:
+        try:
+            length = len(response.body)
+        except:
+            length = '???'
+    print 'MYLOG:', '{ip} - - [{time}] "{method} {uri} {protocol}" {status} {length}'.format(
+        ip=request.environ.get('REMOTE_ADDR'),
+        time=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        method=request.environ.get('REQUEST_METHOD'),
+        uri=request.environ.get('REQUEST_URI'),
+        protocol=request.environ.get('SERVER_PROTOCOL'),
+        status=response.status_code,
+        length=length,
+    )
 
-##    itemids = text_search(query)
-##    html = html_item_link_list( itemids )
-##    return html
-#return query
+# code I've added begins here
+class AccessLogMiddleware(object):
+    def __init__(self, app):
+        self.app = app
 
+    def __call__(self, e, h):
+        # call bottle and store the return value
+        ret_val = self.app(e, h)
+
+        # log the request
+        log_after_request()
+
+        # return bottle's return value
+        return ret_val
+
+logged_app = AccessLogMiddleware(app)
 
 def main():
     data = {"PORT": PORT, "HOST": HOST}
     logger.warn("Starting server %s" % data)
-    run(host=HOST, port=PORT, debug=DEBUG, reloader=RELOAD)
+
+    run(app=logged_app, host=HOST, port=PORT,  server=SERVER , debug=DEBUG, reloader=RELOAD)
 
 
 # Run the server 
