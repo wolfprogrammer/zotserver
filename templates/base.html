@@ -21,34 +21,39 @@
                 
         </style>
 
+        <!--Force Window Reload-->
         <SCRIPT LANGUAGE=JavaScript>
+
         function now(){
             window.location.reload(true);
         }
         </SCRIPT>
 
 
-
     </head>
 
     <body>
     
-    <h1> ZOTERO XYZ SERVER </h1>
+    <h1> ZOTSERVER </h1>
 
-    <h3>{{subtitle}}</h3>
+
     <h2><a href="/{{backlink}}">{{backlink}}</a></h2>
 
-
+    *<a href="/index">Index</a><br />
     *<a href="/items">Items</a><br />
     *<a href="/tags">Tags</a><br />
+    <!--*<a href="/search">Search</a><br />-->
+    <br>
     *<a href="/collections">Browser Collections</a><br />
     *<a href="/all_collections">Browser All Collections</a><br />
+    <br>
     *<a href="/status">Server Status</a><br />
     *<a href="/help">Help</a>
     <!--<hr size=10 width=40%>-->
-    <hr width=35% color="black" align="left" >
+    <!--<hr width=35% color="black" align="left" >-->
     <br /><br />
 
+    <h3>{{subtitle}}</h3>
     {{!content}}
     
 

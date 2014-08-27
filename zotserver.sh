@@ -26,6 +26,7 @@ _base="$(dirname $_script)"
 
 # Default directory
 BROWSER=firefox
+LOCKFILE=/tmp/zotserver.lock
 
 #
 # Assume that the zotserver.py is in the
@@ -39,7 +40,8 @@ STARTCMD="python  zotserver.py"
 start() {
  echo "Starting Python Zotero Server on port 8080"
 
-	nohup $STARTCMD   2>&1 > /dev/null &
+	nohup $STARTCMD  >/dev/null 2>&1 &
+	touch $LOCKFILE
 	#echo $! > $PIDFILE
 	#cat $PIDFILE
 	#$BROWSER localhost:8080
@@ -47,11 +49,18 @@ start() {
 }
 stopp() {
 	echo "Stopping Zotero Server"
-    curl 'http://127.0.0.1:'$SERVERPORT/shutdown2server 2>&1 > /dev/null
+    curl --silent 'http://127.0.0.1:'$SERVERPORT/shutdown2server >/dev/null 2>&1
+    rm -rf $LOCKFILE
 }
 status() {
- 	echo "Status of Zotero Server"
-	tail -f $LOGFILE
+
+	if [ -e "$LOCKFILE" ]
+    then
+      echo "* Server Running"
+    else
+      echo "* Server Not Running"
+    fi
+
 
 }
 

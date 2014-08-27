@@ -21,7 +21,7 @@ from bottle import route, run, debug
 from bottle import template, request, response, post, get
 from bottle import static_file
 from zoterolib import Zotero
-from PyLib import Config, logger, request_logger, get_resource_file, get_resource_path
+from PyLib import Config, logger, request_logger, get_resource_file, get_resource_path, this_dir
 
 PORT = Config.PORT
 HOST = Config.HOST
@@ -80,8 +80,6 @@ def item_link_tpl(path, name, newtab=True):
     link = "".join(['<a href="', url, '"', targ, '>', name, '</a>'])
     logger.debug("link = %s" % link)
     return link
-
-
 
 def get_item_link(itemid):
     """
@@ -245,6 +243,13 @@ def route_index():
 @app.post('/updatelib')
 def route_updatelib():
     logger.warn("ROUTE: /updatelib")
+    from subprocess import Popen, PIPE
+
+    script = os.path.join(this_dir(), 'scripts/update.sh')
+
+    logger.warn("Executing %s" % script)
+    Popen([script])
+
     # os.system("./update.sh")
     # open_database("zotero.sqlite");
     zotero.create_text_index()

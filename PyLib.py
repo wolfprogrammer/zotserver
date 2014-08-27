@@ -172,6 +172,10 @@ LOG_SETTINGS = {
             'level': 'NOTSET',
             'handlers': ['console', 'file'],
         },
+        'lib': {
+            'level': 'NOTSET',
+            'handlers': ['file'],
+        },
         'request': {
             'level': 'INFO',
             'handlers': ['console', 'file2'],
@@ -189,7 +193,7 @@ LOG_SETTINGS = {
         'file': {
                 'class': 'logging.handlers.RotatingFileHandler',
                 'level': 'NOTSET',
-                'formatter': 'request',
+                'formatter': 'detailed',
                 'filename': debug_log,
                 'mode': 'a',
                 'maxBytes': 10485760,
@@ -206,7 +210,7 @@ LOG_SETTINGS = {
         },
         'null':{
             'class': 'logging.NullHandler'
-        }
+        },
     },
     # ----- FORMATTERS -----------------#
     'formatters': {

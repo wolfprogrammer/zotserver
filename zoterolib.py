@@ -15,7 +15,12 @@ data to external applications.
 # from __future__ import unicode_literals
 import sqlite3
 import os.path
-from PyLib import Config, logger
+from PyLib import Config
+
+import logging
+import logging.config
+from PyLib import LOG_SETTINGS
+logger = logging.getLogger("lib")
 
 
 class Zotero():
@@ -548,8 +553,13 @@ class Zotero():
                 if len(rows) == 1:
                     return None
                 path, key = rows[1]
+            # IndexError('list index out of range',)
+            try:
+                fname = path.split("storage:")[1]
+            except:
+                fname = ""
 
-            fname = path.split("storage:")[1]
+
             PATH = os.path.join(self.storage, key, fname)
             return PATH
 
