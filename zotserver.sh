@@ -38,10 +38,19 @@ STARTCMD="python  zotserver.py"
 #exit 0
 
 start() {
- echo "Starting Python Zotero Server on port 8080"
 
-	nohup $STARTCMD  >/dev/null 2>&1 &
-	touch $LOCKFILE
+    if [ -e "$LOCKFILE" ]
+    then
+        echo "Error: Server already running"
+        exit 1
+    else
+        echo "Starting Python Zotero Server on port 8080"
+        nohup $STARTCMD  >/dev/null 2>&1 &
+        touch $LOCKFILE
+        exit 0
+    fi
+
+
 	#echo $! > $PIDFILE
 	#cat $PIDFILE
 	#$BROWSER localhost:8080
@@ -51,17 +60,18 @@ stopp() {
 	echo "Stopping Zotero Server"
     curl --silent 'http://127.0.0.1:'$SERVERPORT/shutdown2server >/dev/null 2>&1
     rm -rf $LOCKFILE
+    exit 0
 }
 status() {
 
 	if [ -e "$LOCKFILE" ]
     then
       echo "* Server Running"
+      exit 0
     else
       echo "* Server Not Running"
+      exit 1
     fi
-
-
 }
 
 reload() {

@@ -31,8 +31,8 @@ SERVER = Config.SERVER
 
 zotero = Zotero(Config.DATABASE, Config.STORAGE, Config.ZOTDIR)
 
-favicon = get_resource_path('templates/favicon.ico')
-base_template = get_resource_path("templates/base.html")
+favicon = get_resource_path('resource/favicon.ico')
+base_template = get_resource_path("resource/base.html")
 
 app = Bottle()
 
@@ -154,6 +154,7 @@ def item_data_html(itemid):
 
     """
     data = zotero.get_item_data(itemid)
+    logger.debug("data = %s" % data)
 
     html = ""
 
@@ -368,6 +369,25 @@ def route_files(path):
         logger.debug("Error: File don't exist on server.")
         return "Error: File don't exist on server."
 
+
+@app.route('/resource/<filename>')
+def route_resource(filename):
+    """
+    Get the files inside template directory
+    :param path:
+    :return:
+    """
+    #filename = path
+
+    this_dir_ = this_dir()
+    path =  os.path.join(this_dir_, 'resource/')
+    logger.warn("ROUTE: /resource = %s" % filename)
+    logger.warn("_path = %s" % path)
+
+    return static_file(filename, path)
+
+
+
 @app.route('/library/<path:path>')
 def route_library(path):
     logger.warn("ROUTE: /files = %s" % path)
@@ -384,6 +404,8 @@ def route_library(path):
     else:
         logger.debug("Error: File don't exist on server.")
         return "Error: File don't exist on server."
+
+
 
 
 @app.route('/tags')
