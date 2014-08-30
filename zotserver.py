@@ -354,20 +354,20 @@ def route_fileid(itemid):
         return "Error: File not found"
 
 
-@app.route('/files/<path:path>')
-def route_files(path):
-    logger.warn("ROUTE: /files = %s" % path)
-
-    if os.path.isfile(path):
-        path_, file_ = os.path.split(path)
-
-        logger.debug("path_ = %s" % path_)
-        logger.debug("file_ = %s" % file_)
-
-        return static_file(file_, path_)
-    else:
-        logger.debug("Error: File don't exist on server.")
-        return "Error: File don't exist on server."
+# @app.route('/files/<path:path>')
+# def route_files(path):
+#     logger.warn("ROUTE: /files = %s" % path)
+#
+#     if os.path.isfile(path):
+#         path_, file_ = os.path.split(path)
+#
+#         logger.debug("path_ = %s" % path_)
+#         logger.debug("file_ = %s" % file_)
+#
+#         return static_file(file_, path_)
+#     else:
+#         logger.debug("Error: File don't exist on server.")
+#         return "Error: File don't exist on server."
 
 
 @app.route('/resource/<filename>')
