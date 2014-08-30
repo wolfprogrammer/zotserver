@@ -23,6 +23,8 @@ from bottle import static_file
 from zoterolib import Zotero
 from PyLib import Config, logger, request_logger, get_resource_file, get_resource_path, this_dir
 
+IMAGEMAGICK="convert"
+
 PORT = Config.PORT
 HOST = Config.HOST
 DEBUG = Config.DEBUG
@@ -35,6 +37,9 @@ favicon = get_resource_path('resource/favicon.ico')
 base_template = get_resource_path("resource/base.html")
 
 app = Bottle()
+
+from subprocess import Popen, PIPE
+
 
 def link_tpl(url, name, linktofile=False, newtab=False):
     """
@@ -81,15 +86,16 @@ def item_link_tpl(path, name, newtab=True):
     logger.debug("link = %s" % link)
     return link
 
-def get_item_link(itemid):
+
+
+def get_item_link(item_filename):
     """
     Returns a html link to the file, given the fileID
 
     """
     # Get item attachment path
-    # path =  get_item_attachment(itemid)
-    path = zotero.get_attachment(itemid)
 
+    path = item_filename #zotero.get_attachment(itemid)
     logger.debug("path = %s" % path)
 
     if path is not None:
@@ -124,6 +130,39 @@ def link_list_tpl(url_list):
     return html
 
 
+def item_picture(itemID):
+    """
+    :return:
+    """
+    filepath = zotero.get_attachment(itemID)
+
+    try:
+        #print "filepath = %s" % filepath
+
+        path, filename = os.path.split(filepath)
+    except:
+        return None
+    coverfile = os.path.join(path, "filecover.jpeg")
+
+    if filepath.endswith('.pdf'):
+
+        # Test if pdf cover file exists in
+        # its storage directory
+        if not os.path.exists(coverfile):
+            #print "Creating file %s" % coverfile
+
+            pwd = os.getcwd()
+            os.chdir(path)
+            #print "command = ", ", ".join([IMAGEMAGICK, '\"%s\"[0]' % filename, "filecover.jpeg"])
+            p = Popen(" ".join([IMAGEMAGICK, '-thumbnail x300', '\"%s\"[0]' % filename, "filecover.jpeg"]), shell=True)
+            p.wait()
+            os.chdir(pwd)
+
+        return coverfile
+    return None
+
+
+
 def html_item_link_list(itemIDs):
     """
     Creates a html code of link to the library Items,
@@ -136,14 +175,23 @@ def html_item_link_list(itemIDs):
     html = ""
 
     for itemid in itemIDs:
+        filepath = zotero.get_attachment(itemid)
+        link = item_picture(itemid)
+        itemlink = get_item_link(filepath)
 
-        link = get_item_link(itemid)
+
         logger.debug("itemid = %s" % itemid)
         logger.debug("link = %s" % link)
 
         if link is not None:
-            html2 = item_data_html(itemid)
-            html = html + link + "<br />" + html2 + "<br /><br />\n"
+            html_data = item_data_html(itemid)
+
+            if link is not None:
+                image_html = """<br />\n<a href="/coverid/{itemid}">
+                <img src="/coverid/{itemid}" width="120" height="90"><br />\n<br />\n""".format(itemid=itemid)
+            else:
+                image_html = ""
+            html = "<br />\n".join([html, itemlink, html_data, image_html])
 
     return html
 
@@ -203,6 +251,29 @@ def html_collections_link(collections):
     return html
 
 
+def create_thumbnails():
+
+    itemIDS = zotero.get_item_ids()
+
+
+    for itemID in itemIDS:
+        try:
+            filepath = zotero.get_attachment(itemID)
+            logger.debug("Creating thumbnail %s" % filepath)
+            print "thumbnail %s" % filepath
+
+            path, filename = os.path.split(filepath)
+
+            if filepath.endswith('.pdf'):
+
+                pwd = os.getcwd()
+                os.chdir(path)
+                p = Popen(" ".join([IMAGEMAGICK, '-verbose -density 150  -quality 100  -trim', '\"%s\"[0]' % filename, "filecover.jpeg"]), shell=True)
+                p.wait()
+                os.chdir(pwd)
+        except Exception as err:
+            print err, err.args, err.__class__
+
 #-------------------------------#
 #         R O U T E S           #
 #-------------------------------#
@@ -241,6 +312,9 @@ def route_index():
     return template(base_template, subtitle="Options:", content=content_, backlink="index")
 
 
+
+
+
 @app.post('/updatelib')
 def route_updatelib():
     logger.warn("ROUTE: /updatelib")
@@ -249,11 +323,12 @@ def route_updatelib():
     script = os.path.join(this_dir(), 'scripts/update.sh')
 
     logger.warn("Executing %s" % script)
-    Popen([script])
+    #Popen([script])
 
     # os.system("./update.sh")
     # open_database("zotero.sqlite");
     zotero.create_text_index()
+    create_thumbnails()
     redirect("/index")
 
 
@@ -325,7 +400,7 @@ def route_collectionid(collid):
 
     html_items = html_item_link_list(items)
 
-    html = html_subcolls + '\n<hr width=35% color="black" align="left" >\n'
+    html = html_subcolls + "<br \><br />"# + '\n<hr width=35% color="black" align="left" >\n'
     html = html + html_items
 
     subtilte_ = "Collection: " + collname
@@ -390,6 +465,8 @@ def route_resource(filename):
 
 @app.route('/library/<path:path>')
 def route_library(path):
+
+
     logger.warn("ROUTE: /files = %s" % path)
 
     _path = os.path.join(zotero.storage, path)
@@ -523,6 +600,24 @@ def route_shutdown():
         os._exit(1)
 
 
+@app.route('/coverid/<itemid:int>')
+def route_coverid(itemid):
+
+    picture = item_picture(itemid)
+
+    print  "picture = %s" % picture
+
+    if picture is None:
+        return "Error picture not found"
+
+    path, filename = os.path.split(picture)
+
+    print "filename = %s" % filename
+    print "path = %s" % path
+
+    return static_file(filename, path)
+
+
 
 class AccessLogMiddleware(object):
     def __init__(self, app):
@@ -567,7 +662,7 @@ def main():
     data = {"PORT": PORT, "HOST": HOST}
     logger.warn("Starting server %s" % data)
 
-    run(app=logged_app, host=HOST, port=PORT,  server=SERVER , debug=DEBUG, reloader=RELOAD)
+    run(app=logged_app, host=HOST, port=PORT,  server=SERVER , debug=DEBUG, reloader=True)
 
 
 # Run the server 
