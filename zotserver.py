@@ -181,9 +181,8 @@ def html_item_link_list(itemIDs):
 
     for itemid in itemIDs:
         filepath = zotero.get_attachment(itemid)
-        link = item_picture(itemid)
+        picture = item_picture(itemid)
         itemlink = get_item_link(filepath)
-
         item_tags = zotero.get_item_tags(itemid)
 
         item_tag_links = [link_tpl("/tagid/%s" % tagid, tagname ) for tagid, tagname in item_tags]
@@ -195,23 +194,27 @@ def html_item_link_list(itemIDs):
 
 
         logger.debug("itemid = %s" % itemid)
-        logger.debug("link = %s" % link)
+        logger.debug("link = %s" % picture)
 
 
-
-        if link is not None:
+        if picture is not None:
             html_data = item_data_html(itemid)
 
-            if link is not None:
+            if picture is not None:
                 src="/coverid/%s" % itemid
                 image_html = py2html.html_image(src="/coverid/%s" % itemid,
-                                                width=240, height=90, href=src)
+                                                width=240, height=180, href=src)
 
-                image_html = "".join(['<br />', image_html, '<br />'])
+                #image_html = "".join(['<br />', image_html, '<br />'])
 
             else:
                 image_html = ""
-            html = "<br />\n".join([html, itemlink, related_tags, html_data, image_html])
+
+            _table = py2html.html_table([[itemlink], [html_data], [related_tags]], cellspacing=2)
+            table = py2html.html_table([[image_html,_table]])
+
+            html = "<br />\n".join([html, table])
+            #html = "<br />\n".join([html, itemlink, related_tags, html_data, image_html])
 
     return html
 
@@ -302,36 +305,10 @@ def create_thumbnails():
 @app.route('/index')
 @app.route('/')
 def route_index():
-    # link_list   =  link_list_tpl(\
-    # [\
-    # [ "/items", "Items"             ] ,\
-    # [ "/tags", "Tags"               ] ,\
-    # [ "/collections", "Collections" ] ,\
-    # [ "/status","Server Status"     ] ,\
-    # [ "/help","Help"                ] ])
 
     logger.warn("ROUTE: /index")
-
-    # search_form = '''
-    # <br />
-    # <form action="/search" method="GET">
-    #         Search Library <br /><input name="q" type="text" autofocus />
-    #         <input value="Search" type="submit" />
-    #     </form>
-    # '''
-
-    search_form = py2html.html_search_form(label="Search Library")
-
-    update_button = '''
-    <br /><br />
-    <form action="/updatelib" method="post">    
-        <input value="Update Library" type="submit" />
-    </form>
-    '''
-
-    #    content_ =  link_list + search_form + update_button
-    content_ = search_form + update_button
-    return template(base_template, subtitle="Options:", content=content_, backlink="index")
+    redirect("/collections")
+    #return template(base_template, subtitle="Options:", content="", backlink="index")
 
 
 
