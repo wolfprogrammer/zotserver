@@ -186,6 +186,33 @@ class Zotero():
         conn.close()
         return []
 
+    def get_related_tags(self, tagid):
+        """
+        Gets all tags related to tagid
+        :param tagid: Tag be searched
+        :type tagid: int
+        :return: List of tuples [(id0, "tag1", (id1, "tag1)" ...]
+        :rtype:  lst
+        """
+        sql = """
+        SELECT DISTINCT B.tagID, C.name
+                  FROM (SELECT * FROM itemTags WHERE tagID = ?) as A,
+                  itemTags as B,
+                  tags as C
+        WHERE A.itemID = B.itemID and B.tagID = C.tagID
+        ORDER BY C.name
+        """
+        conn, cur = self.open_database()
+        query = cur.execute(sql, (tagid,))
+        rows = query.fetchall()
+        conn.close()
+
+        # if rows:
+        #     rows = [r[0] for r in rows]
+
+        return rows
+
+
     def get_collection_name(self, collid):
 
         sql = """
@@ -416,6 +443,30 @@ class Zotero():
         conn.close()
         return itemids
 
+    def get_item_tags(self, itemid):
+        """
+        :param itemid:
+        :type itemid: int
+        :return:
+        :rtype:  lst
+        """
+
+        sql = """
+        SELECT A.tagID, B.name  FROM
+            (SELECT itemTags.tagID FROM itemTags WHERE    itemTags.itemID =  ? ) as A,
+            tags as B
+        WHERE A.tagID = B.tagID
+        """
+
+        conn, cur = self.open_database()
+        query = cur.execute(sql, (itemid,))
+        rows = query.fetchall()
+        conn.close()
+        return rows
+
+
+
+
     def get_item_data(self, itemid):
 
         sql = """
@@ -433,6 +484,7 @@ class Zotero():
         query = cur.execute(sql, (itemid,))
         rows = query.fetchall()
         conn.close()
+
         return rows
 
     def list_item_data(self, itemid):
@@ -564,25 +616,18 @@ class Zotero():
             return PATH
 
 
-    #    return rows
-
-
-    # Close database connection
-    #conn.close()
-
-    # if __name__ == "__main__":
-    #     #print "Testing"
-    #
-    #     open_database(DATABASE2);
-    #     #list_items();
-
-
-
 def main():
 
-    zotero = Zotero(Config.DATABASE, Config.STORAGE)
+    zotero = Zotero(Config.DATABASE, Config.STORAGE, Config.ZOTDIR)
 
     print zotero.list_items()
+    print 10*"-"
+
+    print zotero.get_item_tags(116)
+    print 10*"-"
+
+    print zotero.get_related_tags(1)
+    print 10*"-"
 
 if __name__ == "__main__":
     main()

@@ -61,6 +61,9 @@ def link_tpl(url, name, linktofile=False, newtab=False):
         targ = ' target="_blank" '
 
     link = '<a href="' + url + '"' + targ + '>' + name + '</a>'
+
+    #link = '<a href="{url}" {targ}> {name} </a>'.format(url=url, targ=targ, name=name)
+
     return link
 
 def item_link_tpl(path, name, newtab=True):
@@ -179,19 +182,35 @@ def html_item_link_list(itemIDs):
         link = item_picture(itemid)
         itemlink = get_item_link(filepath)
 
+        item_tags = zotero.get_item_tags(itemid)
+
+        item_tag_links = [link_tpl("/tagid/%s" % tagid, tagname ) for tagid, tagname in item_tags]
+        item_tag_links = " ".join(item_tag_links)
+        related_tags = "Tags: %s<br />" % item_tag_links
+
+        # print "item_tag_links = ", str(item_tag_links)
+        # print "type = ",type(item_tag_links)
+
 
         logger.debug("itemid = %s" % itemid)
         logger.debug("link = %s" % link)
+
+
 
         if link is not None:
             html_data = item_data_html(itemid)
 
             if link is not None:
-                image_html = """<br />\n<a href="/coverid/{itemid}">
-                <img src="/coverid/{itemid}" width="120" height="90"><br />\n<br />\n""".format(itemid=itemid)
+                image_html = """
+                <br />
+                <a href="/coverid/{itemid}">
+                <img src="/coverid/{itemid}" width="120" height="90"><br />
+                <br />
+
+                """.format(itemid=itemid)
             else:
                 image_html = ""
-            html = "<br />\n".join([html, itemlink, html_data, image_html])
+            html = "<br />\n".join([html, itemlink, related_tags, html_data, image_html])
 
     return html
 
@@ -499,9 +518,16 @@ def route_tags():
     tags = zotero.get_tags()
     for tag in tags:
         tagid, tagname = tag
-        url = "/tagid/" + str(tagid)
+        url = "".join(["/tagid/", str(tagid)])
         link = link_tpl(url, tagname)
-        html = html + link + "<br />\n"
+
+        _tags = zotero.get_related_tags(tagid)
+        tags_links = [link_tpl("/tagid/%s" % tagid, tagname ) for tagid, tagname in _tags]
+        item_tag_links = " ".join(tags_links)
+        related_tags = "   Related: %s<br />" % item_tag_links
+
+
+        html = html + link + related_tags + "<br />\n"
 
     return template(base_template, subtitle="Tags", content=html, backlink="index")
 
@@ -512,11 +538,23 @@ def route_tagid(tagid):
 
     tagname = zotero.get_tagname(tagid)
     items = zotero.filter_tag(tagid)
-    html = html_item_link_list(items)
+
     subtilte_ = "Tag: " + tagname
+
+    tags = zotero.get_related_tags(tagid)
+    tags_links = [link_tpl("/tagid/%s" % tagid, tagname ) for tagid, tagname in tags]
+    item_tag_links = " ".join(tags_links)
+    related_tags = "Related Tags: %s<br />" % item_tag_links
+
+
+    html = related_tags + html_item_link_list(items)
+
     return template(base_template, subtitle=subtilte_, content=html, backlink="tags")
 
 last_query = ""
+
+
+
 
 @app.route('/search')
 def route_search():
@@ -568,9 +606,10 @@ def route_help():
 
     html = \
     """
-    The ZOTERO SERVER - Is a http web server that uses bottle framework. <br />
+    The ZOTSERVER - ZOTERO SERVER - Is a http web server that uses bottle framework. <br />
     This simple and lightweight and self contained web server allows to access the     <br />
     Zotero data from anywhere or from anywhere, any device, tablet, smartphone, PC ... <br />
+
 
     See updates on: %s
     """
@@ -616,6 +655,13 @@ def route_coverid(itemid):
     print "path = %s" % path
 
     return static_file(filename, path)
+
+
+@app.route("/settings")
+def route_settings():
+    """
+    User settings route
+    """
 
 
 
