@@ -22,6 +22,8 @@ from bottle import template, request, response, post, get
 from bottle import static_file
 from zoterolib import Zotero
 from PyLib import Config, logger, request_logger, get_resource_file, get_resource_path, this_dir
+import py2html
+
 
 IMAGEMAGICK="convert"
 
@@ -201,13 +203,12 @@ def html_item_link_list(itemIDs):
             html_data = item_data_html(itemid)
 
             if link is not None:
-                image_html = """
-                <br />
-                <a href="/coverid/{itemid}">
-                <img src="/coverid/{itemid}" width="120" height="90"><br />
-                <br />
+                src="/coverid/%s" % itemid
+                image_html = py2html.html_image(src="/coverid/%s" % itemid,
+                                                width=240, height=90, href=src)
 
-                """.format(itemid=itemid)
+                image_html = "".join(['<br />', image_html, '<br />'])
+
             else:
                 image_html = ""
             html = "<br />\n".join([html, itemlink, related_tags, html_data, image_html])
@@ -311,13 +312,15 @@ def route_index():
 
     logger.warn("ROUTE: /index")
 
-    search_form = '''
-    <br />
-    <form action="/search" method="GET">
-            Search Library <br /><input name="q" type="text" autofocus />
-            <input value="Search" type="submit" />
-        </form>
-    '''
+    # search_form = '''
+    # <br />
+    # <form action="/search" method="GET">
+    #         Search Library <br /><input name="q" type="text" autofocus />
+    #         <input value="Search" type="submit" />
+    #     </form>
+    # '''
+
+    search_form = py2html.html_search_form(label="Search Library")
 
     update_button = '''
     <br /><br />
@@ -516,6 +519,9 @@ def route_tags():
     html = ""
 
     tags = zotero.get_tags()
+
+    table = []
+
     for tag in tags:
         tagid, tagname = tag
         url = "".join(["/tagid/", str(tagid)])
@@ -523,11 +529,13 @@ def route_tags():
 
         _tags = zotero.get_related_tags(tagid)
         tags_links = [link_tpl("/tagid/%s" % tagid, tagname ) for tagid, tagname in _tags]
-        item_tag_links = " ".join(tags_links)
-        related_tags = "   Related: %s<br />" % item_tag_links
+        related_tags = " ".join(tags_links)
+        #related_tags = "   Related: %s<br />" % related_tags
 
+        table.append([link, related_tags])
+        #html = html + link + related_tags + "<br />\n"
 
-        html = html + link + related_tags + "<br />\n"
+    html = py2html.html_table(table=table)
 
     return template(base_template, subtitle="Tags", content=html, backlink="index")
 

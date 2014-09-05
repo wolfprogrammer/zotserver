@@ -1,0 +1,283 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>zotserver</title>
+<style type="text/css">
+    li { list-style: none;  margin: 0; }
+    p { margin: 0; }
+    span.foldopened { color: white; font-size: xx-small;
+    border-width: 1; font-family: monospace; padding: 0em 0.25em 0em 0.25em; background: #e0e0e0;
+    VISIBILITY: visible;
+    cursor:pointer; }
+
+
+    span.foldclosed { color: #666666; font-size: xx-small;
+    border-width: 1; font-family: monospace; padding: 0em 0.25em 0em 0.25em; background: #e0e0e0;
+    VISIBILITY: hidden;
+    cursor:pointer; }
+
+    span.foldspecial { color: #666666; font-size: xx-small; border-style: none solid solid none;
+    border-color: #CCCCCC; border-width: 1; font-family: sans-serif; padding: 0em 0.1em 0em 0.1em; background: #e0e0e0;
+    cursor:pointer; }
+
+    span.l { color: red; font-weight: bold; }
+
+    a.mapnode:link {text-decoration: none; color: black; }
+    a.mapnode:visited {text-decoration: none; color: black; }
+    a.mapnode:active {text-decoration: none; color: black; }
+    a.mapnode:hover {text-decoration: none; color: black; background: #eeeee0; }
+
+</style>
+<!-- ^ Position is not set to relative / absolute here because of Mozilla -->
+</head>
+<body>
+
+<script type="text/javascript">
+   // Here we implement folding. It works fine with MSIE5.5, MSIE6.0 and
+   // Mozilla 0.9.6.
+
+   if (document.layers) {
+      //Netscape 4 specific code
+      pre = 'document.';
+      post = ''; }
+   if (document.getElementById) {
+      //Netscape 6 specific code
+      pre = 'document.getElementById("';
+      post = '").style'; }
+   if (document.all) {
+      //IE4+ specific code
+      pre = 'document.all.';
+      post = '.style'; }
+
+function layer_exists(layer) {
+   try {
+      eval(pre + layer + post);
+      return true; }
+   catch (error) {
+      return false; }}
+
+function show_layer(layer) {
+   eval(pre + layer + post).position = 'relative'; 
+   eval(pre + layer + post).visibility = 'visible'; }
+
+function hide_layer(layer) {
+   eval(pre + layer + post).visibility = 'hidden';
+   eval(pre + layer + post).position = 'absolute'; }
+
+function hide_folder(folder) {
+    hide_folding_layer(folder)
+    show_layer('show'+folder);
+
+    scrollBy(0,0); // This is a work around to make it work in Browsers (Explorer, Mozilla)
+}
+
+function show_folder(folder) {
+    // Precondition: all subfolders are folded
+
+    show_layer('hide'+folder);
+    hide_layer('show'+folder);
+    show_layer('fold'+folder);
+
+    scrollBy(0,0); // This is a work around to make it work in Browsers (Explorer, Mozilla)
+
+    var i;
+    for (i=1; layer_exists('fold'+folder+'_'+i); ++i) {
+       show_layer('show'+folder+'_'+i); }
+}
+function show_folder_completely(folder) {
+    // Precondition: all subfolders are folded
+
+    show_layer('hide'+folder);
+    hide_layer('show'+folder);
+    show_layer('fold'+folder);
+
+    scrollBy(0,0); // This is a work around to make it work in Browsers (Explorer, Mozilla)
+
+    var i;
+    for (i=1; layer_exists('fold'+folder+'_'+i); ++i) {
+       show_folder_completely(folder+'_'+i); }
+}
+
+
+
+function hide_folding_layer(folder) {
+   var i;
+   for (i=1; layer_exists('fold'+folder+'_'+i); ++i) {
+       hide_folding_layer(folder+'_'+i); }
+
+   hide_layer('hide'+folder);
+   hide_layer('show'+folder);
+   hide_layer('fold'+folder);
+
+   scrollBy(0,0); // This is a work around to make it work in Browsers (Explorer, Mozilla)
+}
+
+function fold_document() {
+   var i;
+   var folder = '1';
+   for (i=1; layer_exists('fold'+folder+'_'+i); ++i) {
+       hide_folder(folder+'_'+i); }
+}
+
+function unfold_document() {
+   var i;
+   var folder = '1';
+   for (i=1; layer_exists('fold'+folder+'_'+i); ++i) {
+       show_folder_completely(folder+'_'+i); }
+}
+
+</script>
+<SPAN class="foldspecial" onclick="fold_document()">All +</SPAN>
+<SPAN class="foldspecial" onclick="unfold_document()">All -</SPAN>
+<p>zotserver
+<ul><li>site map
+<ul><li>/index
+<ul><li>/help
+
+</li>
+<li>/items
+
+</li>
+<li>/tags
+
+</li>
+<li>/collections
+
+</li>
+<li>/all_collections
+
+</li>
+<li>/settings
+
+</li>
+<li>/edit
+
+</li>
+<li>/docs
+
+</li>
+<li>/logs
+
+</li>
+<li><span id="show1_1" class="foldclosed" onClick="show_folder('1_1')" style="POSITION: absolute">+</span> <span id="hide1_1" class="foldopened" onClick="hide_folder('1_1')">-</span>
+/update
+<ul id="fold1_1" style="POSITION: relative; VISIBILITY: visible;"><li>Recreate full text search index and site database and retrive files from zotero library
+
+</li>
+
+</ul>
+</li>
+<li><span id="show1_2" class="foldclosed" onClick="show_folder('1_2')" style="POSITION: absolute">+</span> <span id="hide1_2" class="foldopened" onClick="hide_folder('1_2')">-</span>
+/shutdown2server
+<ul id="fold1_2" style="POSITION: relative; VISIBILITY: visible;"><li>&#xa;    <p>&#xa;      This route is only accessible from localhost.&#xa;    </p>&#xa;    <p>&#xa;      &#xa;    </p>&#xa;    <p>&#xa;      When this route is called from localhost, it kills server process.&#xa;    </p>&#xa;    <p>&#xa;      This route is used by the daemon zotserver.sh&#xa;    </p>&#xa;  
+</li>
+</ul>
+</li>
+
+</ul>
+</li>
+<li>database
+<ul><li>/collectionid/&lt;collection-id&gt;
+
+</li>
+<li>/tagid/&lt;tag-id&gt;
+
+</li>
+<li>/library/&lt;item-path&gt;
+
+</li>
+
+</ul>
+</li>
+
+</ul>
+</li>
+<li>features
+<ul><li>Import zotero library
+
+</li>
+<li>Show library *.pdf, *.html thiumbnails
+
+</li>
+<li><img src="images/icons/help.png" alt="Question">Online editing
+
+</li>
+<li>Settings in the browser
+
+</li>
+<li>Allow password
+
+</li>
+<li>Upgrade server from github
+
+</li>
+<li>Human friendly URL
+
+</li>
+<li>Drag and drop files directly to the server page
+
+</li>
+<li>Automatic documentation generator
+
+</li>
+<li>Add doc page
+
+</li>
+<li>Json/RPC Restful API
+
+</li>
+<li>Export books to Dropbox
+
+</li>
+
+</ul>
+</li>
+<li>files
+<ul><li>zotserver.sh
+<ul><li>Server daemon control script
+
+</li>
+
+</ul>
+</li>
+<li>zotserver.py
+<ul><li>Server main script
+
+</li>
+
+</ul>
+</li>
+<li>scripts
+<ul><li>redirectPort.sh
+<ul><li>redirect inbound traffic from port 80 to 8080 
+
+</li>
+
+</ul>
+</li>
+<li>cleanIptables.sh
+<ul><li>Clean all iptables rules
+
+</li>
+
+</ul>
+</li>
+<li>findzotserver.py
+<ul><li>Find zotserver directory and files
+
+</li>
+
+</ul>
+</li>
+
+</ul>
+</li>
+
+</ul>
+</li>
+
+</ul><SCRIPT type="text/javascript">
+fold_document();
+</SCRIPT>
+</body>
+</html>
