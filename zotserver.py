@@ -180,40 +180,51 @@ def html_item_link_list(itemIDs):
     html = ""
 
     for itemid in itemIDs:
+
         filepath = zotero.get_attachment(itemid)
-        picture = item_picture(itemid)
         itemlink = get_item_link(filepath)
+
+        if filepath is None:
+            continue
+
+        picture = item_picture(itemid)
+
         item_tags = zotero.get_item_tags(itemid)
 
-        item_tag_links = [link_tpl("/tagid/%s" % tagid, tagname ) for tagid, tagname in item_tags]
+        item_tag_links = [link_tpl("/tagid/%s" % tagid, tagname) for tagid, tagname in item_tags]
         item_tag_links = " ".join(item_tag_links)
         related_tags = "Tags: %s<br />" % item_tag_links
 
         # print "item_tag_links = ", str(item_tag_links)
         # print "type = ",type(item_tag_links)
 
-
         logger.debug("itemid = %s" % itemid)
-        logger.debug("link = %s" % picture)
+        logger.debug("picture = %s" % picture)
+        logger.debug("filepath = %s" % filepath)
+        logger.debug("itemlink = %s" % itemlink)
 
 
         if picture is not None:
-            html_data = item_data_html(itemid)
+
 
             if picture is not None:
                 src="/coverid/%s" % itemid
                 image_html = py2html.html_image(src="/coverid/%s" % itemid,
                                                 width=240, height=180, href=src)
-
                 #image_html = "".join(['<br />', image_html, '<br />'])
+        else:
+            image_html = ""
 
-            else:
-                image_html = ""
+        html_data = item_data_html(itemid)
 
-            _table = py2html.html_table([[itemlink], [html_data], [related_tags]], cellspacing=2)
-            table = py2html.html_table([[image_html,_table]])
+        _table = py2html.html_table([[itemlink], [html_data], [related_tags]], cellspacing=2)
+        table = py2html.html_table([[image_html,_table]])
 
-            html = "<br />\n".join([html, table])
+        #logger.debug("table = %s" % table)
+
+        html = "<br />\n".join([html, table])
+
+        logger.debug("html = \n%s" % html)
             #html = "<br />\n".join([html, itemlink, related_tags, html_data, image_html])
 
     return html
@@ -310,10 +321,6 @@ def route_index():
     redirect("/collections")
     #return template(base_template, subtitle="Options:", content="", backlink="index")
 
-
-
-
-
 @app.post('/updatelib')
 def route_updatelib():
     logger.warn("ROUTE: /updatelib")
@@ -402,8 +409,19 @@ def route_collectionid(collid):
     html = html_subcolls + "<br \><br />"# + '\n<hr width=35% color="black" align="left" >\n'
     html = html + html_items
 
+    logger.debug("collname = %s" % collname)
+    logger.debug("items = %s" % items)
+    logger.debug("html_items %s" %html_items )
+
     subtilte_ = "Collection: " + collname
     return template(base_template, subtitle=subtilte_, content=html, backlink="collections")
+
+
+@app.route('/collection/<name>')
+def route_collection(name):
+    return name
+
+
 
 
 @app.route('/fileid/<itemid:int>')

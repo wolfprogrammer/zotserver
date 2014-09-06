@@ -232,6 +232,11 @@ class Zotero():
         conn.close()
         return []
 
+
+    def get_collection_id(self, collname):
+        pass
+
+
     def get_collections(self):
         """
         Get all collections and return in a list
@@ -628,6 +633,8 @@ def main():
 
     print zotero.get_related_tags(1)
     print 10*"-"
+
+    print zotero.get_attachment(257)
 
 if __name__ == "__main__":
     main()

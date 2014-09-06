@@ -166,19 +166,22 @@ LOG_SETTINGS = {
     'disable_existing_loggers': False,
 
     # ---------- LOGGERS ---------------#
-
+    'root': {
+        'level': 'WARN',
+        'handlers': ['console', 'file'],
+        'propagate': True,
+    },
     'loggers':{
-        'root': {
-            'level': 'NOTSET',
-            'handlers': ['console', 'file'],
-        },
+
         'lib': {
-            'level': 'NOTSET',
+            'level': 'INFO',
             'handlers': ['file'],
+            'propagate': True,
         },
         'request': {
             'level': 'INFO',
             'handlers': ['console', 'file2'],
+            'propagate': True,
         },
     },
 
@@ -190,6 +193,14 @@ LOG_SETTINGS = {
             'formatter': 'detailed',
             'stream': 'ext://sys.stdout',
         },
+        'console2': {
+            'class': 'logging.StreamHandler',
+            'level': 'NOTSET',
+            'formatter': 'request',
+            'stream': 'ext://sys.stdout',
+        },
+
+
         'file': {
                 'class': 'logging.handlers.RotatingFileHandler',
                 'level': 'NOTSET',
