@@ -329,7 +329,10 @@ def route_updatelib():
     script = os.path.join(this_dir(), 'scripts/update.sh')
 
     logger.warn("Executing %s" % script)
-    #Popen([script])
+
+    update_log = os.path.join(Config.ZOTDIR, 'log', "update.log")
+    out_err = Popen([script], stdout=PIPE, stderr=PIPE).communicate()
+    open(update_log, 'w').write("".join(out_err))
 
     # os.system("./update.sh")
     # open_database("zotero.sqlite");
@@ -500,8 +503,6 @@ def route_library(path):
         return "Error: File don't exist on server."
 
 
-
-
 @app.route('/tags')
 def route_tags():
     """
@@ -555,9 +556,6 @@ def route_tagid(tagid):
     return template(base_template, subtitle=subtilte_, content=html, backlink="tags")
 
 last_query = ""
-
-
-
 
 @app.route('/search')
 def route_search():
@@ -665,6 +663,8 @@ def route_settings():
     """
     User settings route
     """
+
+    return "settings"
 
 
 

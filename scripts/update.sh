@@ -7,6 +7,7 @@
 #   U S E R   S E T T I N G S      #
 #----------------------------------#
 
+export HOME=/home/tux
 FIREFOX_PROFILE="mwad0hks.default"
 ZOTSERVER_DATA=$HOME/.zotserver         # Destination Directory
 
