@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
+from __future__ import unicode_literals
 """
 Zotsever.py
 
@@ -42,8 +42,11 @@ app = Bottle()
 
 from subprocess import Popen, PIPE
 
+here = this_dir()
+os.chdir(here)
 
-def link_tpl(url, name, linktofile=False, newtab=False):
+
+def link_tpl(url, label, newtab=False):
     """
     Create html link code to URL
     Returns the html code to the link
@@ -55,20 +58,17 @@ def link_tpl(url, name, linktofile=False, newtab=False):
                  True  : Force to open links in new tab
     """
 
-    if linktofile == True:
-        url = "/files/" + url
-
     targ = ""
     if newtab == True:
         targ = ' target="_blank" '
 
-    link = '<a href="' + url + '"' + targ + '>' + name + '</a>'
+    #link = '<a href="' + url + '"' + targ + '>' + label + '</a>'
 
-    #link = '<a href="{url}" {targ}> {name} </a>'.format(url=url, targ=targ, name=name)
+    link = '<a href="{url}" {targ}>{label}</a>'.format(url=url, targ=targ, label=label)
 
     return link
 
-def item_link_tpl(path, name, newtab=True):
+def attachment_link(path, name, newtab=True):
     """
     Create html link code to URL
     Returns the html code to the link
@@ -107,8 +107,8 @@ def get_item_link(item_filename):
         # path = os.path.join("/files", path)
         # path = "/files" + path
 
-        name = os.path.split(path)[1]
-        link = item_link_tpl(path, name, newtab=True)
+        #name = os.path.split(path)[1]
+        link = attachment_link(path, "Attachment", newtab=True)
         # print link
         # link = '<a href="' + path + '">' + "file" + "</a>"
         return link
@@ -181,53 +181,103 @@ def html_item_link_list(itemIDs):
 
     for itemid in itemIDs:
 
-        filepath = zotero.get_attachment(itemid)
-        itemlink = get_item_link(filepath)
-
-        if filepath is None:
-            continue
-
-        picture = item_picture(itemid)
-
-        item_tags = zotero.get_item_tags(itemid)
-
-        item_tag_links = [link_tpl("/tagid/%s" % tagid, tagname) for tagid, tagname in item_tags]
-        item_tag_links = " ".join(item_tag_links)
-        related_tags = "Tags: %s<br />" % item_tag_links
-
-        # print "item_tag_links = ", str(item_tag_links)
-        # print "type = ",type(item_tag_links)
-
-        logger.debug("itemid = %s" % itemid)
-        logger.debug("picture = %s" % picture)
-        logger.debug("filepath = %s" % filepath)
-        logger.debug("itemlink = %s" % itemlink)
-
-
-        if picture is not None:
-
-
-            if picture is not None:
-                src="/coverid/%s" % itemid
-                image_html = py2html.html_image(src="/coverid/%s" % itemid,
-                                                width=240, height=180, href=src)
-                #image_html = "".join(['<br />', image_html, '<br />'])
-        else:
-            image_html = ""
-
         html_data = item_data_html(itemid)
+        html = "".join([html, html_data])
+        #logger.debug("html = \n%s" % html)
 
-        _table = py2html.html_table([[itemlink], [html_data], [related_tags]], cellspacing=2)
-        table = py2html.html_table([[image_html,_table]])
-
-        #logger.debug("table = %s" % table)
-
-        html = "<br />\n".join([html, table])
-
-        logger.debug("html = \n%s" % html)
-            #html = "<br />\n".join([html, itemlink, related_tags, html_data, image_html])
-
+    #return txt.format(html=html)
     return html
+
+
+_row_tpl = \
+"""
+<tr>
+<th>{label}</th>
+<td>{value}</td>
+</tr>
+""".strip('\n')
+
+_image_row_tpl = \
+"""
+<td>
+{image}
+</td>
+"""
+
+_attachment_row = \
+"""
+<tr>
+<th>{attachment}</th>
+<td></td>
+</tr>
+"""
+
+# <li id="i10" class="item attachment">
+table_tpl =\
+"""
+<li id="i{id}">
+<h3> {title} </h3>
+<table>
+{content}
+</table>
+</li>
+"""
+
+attributes = [
+    # ['Title',           'title'],
+    ['Type',            'type'],
+    [ 'Book Title',     'bookTitle'],
+    [ 'Short Title',    'shortTitle'],
+    ['Abstract',        'abstractNote'],
+    ['Publisher',       'publisher' ],
+    ['Edition',         'edition'],
+    ['Place',           'place'],
+    ['Company',         'company'],
+    ['Institution',     'institution'],
+    ['University',      'university'],
+    ['Subject',         'subject'],
+    ['Patent Number',   'patentNumber'],
+    ['ISBN',            'ISBN'],
+    ['ISSN',            'ISSN'],
+    ['DOI',             'DOI'],
+    ['Programming Language', 'programmingLanguage'],
+    ['Program Title',       'programTitle'],
+    ['Library Catalog', 'libraryCatalog'],
+    ['Access Date',    'accessDate'],
+    ['Date',            'date'],
+
+    ['Url',             'url'],
+    ['Pages',           'pages'],
+
+]
+
+
+
+def row_tpl(label, attribute, data):
+    if data.has_key(attribute):
+
+        value=data[attribute]
+
+        if attribute == "url":
+            value = link_tpl(value, value, newtab=True)
+
+        return _row_tpl.format(label=label, value=value)
+    else:
+        return ""
+
+def thumbnail_html(itemid):
+    picture = item_picture(itemid)
+    image_html = ""
+    if picture is not None:
+        if picture is not None:
+            src="/coverid/%s" % itemid
+            image_html = py2html.html_image(src="/coverid/%s" % itemid,
+                                            width=240, height=180, href=src)
+            #image_html = "".join(['<br />', image_html, '<br />'])
+    else:
+        image_html = ""
+
+    return image_html
 
 
 def item_data_html(itemid):
@@ -238,12 +288,56 @@ def item_data_html(itemid):
     data = zotero.get_item_data(itemid)
     logger.debug("data = %s" % data)
 
-    html = ""
+    print "data ", data
 
-    for dat in data:
-        html = html + "%s\t\t%s <br />\n " % ( dat[0], dat[1] )
+    # Get attachment file
+    #------------------------------------------------------------
+    attachment = zotero.get_attachment(itemid)
+    if attachment is None:
+        attachment_url = ""
+        attachment_row = ""
+    else:
+        attachment_url = attachment_link(attachment, "Attachment")
+        #attachment_url = link_tpl(label="Attachment", url='/attachment/%s' % itemid)
+        attachment_row = _attachment_row.format(attachment=attachment_url)
 
-    return html
+
+    # Get item tags url
+    #------------------------------------------------------------
+    item_tags = zotero.get_item_tags(itemid)
+    item_tag_links = [link_tpl("/tagid/%s" % tagid, tagname) for tagid, tagname in item_tags]
+
+    if item_tag_links:
+
+       item_tag_links = " ".join(item_tag_links)
+       tag_row = _row_tpl.format(label="Tag", value=item_tag_links)
+
+    else:
+        tag_row = ""
+
+    #  Get Image thumbnail
+    #------------------------------------------------------------
+    image = thumbnail_html(itemid)
+    image_row = _image_row_tpl.format(image=image)
+
+    #  Get Item Metadata
+    #------------------------------------------------------------
+    try:
+        Title = data['title']
+    except:
+        Title = attachment
+
+    content = ""
+
+    for label, attribute in attributes:
+        content = "".join([content, row_tpl(label, attribute, data)])
+
+    content = "".join([content, tag_row, attachment_row, image_row])
+
+    table = table_tpl.format(id=itemid, content=content, title=Title)
+
+    return table
+
 
 
 def format_query(query):
@@ -475,11 +569,15 @@ def route_resource(filename):
     #filename = path
 
     this_dir_ = this_dir()
-    path =  os.path.join(this_dir_, 'resource/')
-    logger.warn("ROUTE: /resource = %s" % filename)
-    logger.warn("_path = %s" % path)
+    _path =  os.path.join(this_dir_, 'resource')
 
-    return static_file(filename, path)
+    print "path = %s" % _path
+    print "file = %s " % filename
+
+    logger.warn("ROUTE: /resource = %s" % filename)
+    logger.warn("_path = %s" % _path)
+
+    return static_file(filename, root=_path)
 
 
 
@@ -501,6 +599,18 @@ def route_library(path):
     else:
         logger.debug("Error: File don't exist on server.")
         return "Error: File don't exist on server."
+
+
+@app.route('/attachment/<itemid>')
+def route_attachment(itemid):
+    attachment = zotero.get_attachment(itemid)
+    _path, _file = os.path.split(attachment)
+
+    if not os.path.exists(attachment):
+        return "Error: File don't exist on server."
+    else:
+        return static_file(_file, _path)
+
 
 
 @app.route('/tags')
@@ -665,8 +775,6 @@ def route_settings():
     """
 
     return "settings"
-
-
 
 class AccessLogMiddleware(object):
     def __init__(self, app):

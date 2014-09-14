@@ -3,57 +3,51 @@
   <title>ZOTSERVER</title>
    <META HTTP-EQUIV="Pragma" CONTENT="no-cache"><META HTTP-EQUIV="Expires" CONTENT="-1">
    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <style>
-   .menu {
-      float:left;
-      width:20%;
-      height:80%;
 
-    }
-    .mainContent {
-      float:left;
-      width:75%;
-      height:80%;
-    }
+    <!--<link rel="stylesheet" type="text/css" href="resource/layout.css"/>-->
+    <!--<link rel="stylesheet" type="text/css" href="/resource/theme.css"/>-->
 
 
+    <style>
+    .menu {
+          float:left;
+          width:20%;
+          height:80%;
 
-    h1 {color:black;}
-    h2 {color:black;}
-    p {color:blue;}
+        }
+        .mainContent {
+          float:left;
+          width:75%;
+          height:80%;
+        }
 
-
-    a:link { color:#33348e; text-decoration: none; }
-    a:visited { color:blue; text-decoration: none; }
-    a:hover { color:#33348e; text-decoration: none; }
-    a:active { color:#7476b4; text-decoration: underline; }
-
-    A:hover {
-         COLOR: green /*The color of the mouseover or 'hover' link*/;
-         background-color: yellow;
-    }
-
-    @media (max-width: 699px) and (min-width: 520px) {
-    @-viewport {
-        width: 640px;
-      }
-    }
-    @viewport {
-        width: 980px;
-        min-zoom: 0.25;
-        max-zoom: 5;
-        orientation: landscape;
-    }
-
-    img {
-    max-width:64px;
-    max-height:64px;
-    width:auto;
-    height:auto;
-    }
+        h1 {color:black;}
+        <!--h2 {color:black;}-->
+        p {color:blue;}
 
 
-  </style>
+        a:link { color:#33348e; text-decoration: none; }
+        a:visited { color:blue; text-decoration: none; }
+        a:hover { color:#33348e; text-decoration: none; }
+        a:active { color:#7476b4; text-decoration: underline; }
+
+        A:hover {
+             COLOR: green /*The color of the mouseover or 'hover' link*/;
+             background-color: yellow;
+        }
+
+        img {
+        max-width:64px;
+        max-height:64px;
+        width:auto;
+        height:auto;
+        }
+
+    </style>
+
+    <link rel="stylesheet" type="text/css" href="/resource/detail.css"/>
+
+
 </head>
 <body>
   <object class="menu">
@@ -91,7 +85,7 @@
 
   <object class="mainContent">
 
-    <h2>{{subtitle}}</h2>
+    <h1>{{subtitle}}</h1>
     {{!content}}
 
   </object>

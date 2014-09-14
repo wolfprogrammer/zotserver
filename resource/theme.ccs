@@ -1,0 +1,47 @@
+.menu {
+  float:left;
+  width:20%;
+  height:80%;
+
+}
+.mainContent {
+  float:left;
+  width:75%;
+  height:80%;
+}
+
+
+
+h1 {color:black;}
+h2 {color:black;}
+p {color:blue;}
+
+
+a:link { color:#33348e; text-decoration: none; }
+a:visited { color:blue; text-decoration: none; }
+a:hover { color:#33348e; text-decoration: none; }
+a:active { color:#7476b4; text-decoration: underline; }
+
+A:hover {
+     COLOR: green /*The color of the mouseover or 'hover' link*/;
+     background-color: yellow;
+}
+
+@media (max-width: 699px) and (min-width: 520px) {
+@-viewport {
+    width: 640px;
+  }
+}
+@viewport {
+    width: 980px;
+    min-zoom: 0.25;
+    max-zoom: 5;
+    orientation: landscape;
+}
+
+img {
+max-width:64px;
+max-height:64px;
+width:auto;
+height:auto;
+}

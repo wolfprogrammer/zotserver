@@ -1,0 +1,113 @@
+body {
+	padding: 0;
+}
+
+
+
+h1, h2, h3, h4, h5, h6 {
+	font-weight: normal;
+}
+
+h2 {
+	margin: 0 0 .5em;
+}
+
+h2.parentItem {
+	font-weight: bold;
+	font-size: 1em;
+	padding: 0 0 .5em;
+	border-bottom: 1px solid #ccc;
+}
+
+/* If combining children, display parent slightly larger */
+
+h2.parentItem .title {
+	font-weight: normal;
+}
+
+h3 {
+	margin-bottom: .6em;
+	font-weight: bold !important;
+	font-size: 1em;
+	display: block;
+}
+
+/* Metadata table */
+th {
+	vertical-align: top;
+	text-align: right;
+	width: 15%;
+	white-space: nowrap;
+}
+
+td {
+	padding-left: .5em;
+}
+
+
+/* Tags */
+h3.tags {
+	font-size: 1.1em;
+}
+
+
+
+
+/* Child notes */
+h3.notes {
+	font-size: 1.1em;
+}
+
+
+
+/* Child attachments */
+h3.attachments {
+	font-size: 1.1em;
+}
+
+
+/* Generic styles */
+body {
+	font: 80% Georgia, Times, serif;
+}
+
+h2 {
+	font-size: 1.0em;
+	line-height: 1.5em;
+	font-family: Georgia, Times, serif;
+}
+
+p {
+	line-height: 1.5em;
+}
+
+a:link, a:visited {
+	color: #900;
+}
+
+a:hover, a:active {
+	color: #777;
+}
+
+
+ul.report {
+	font-size: 1.4em;
+	width: 680px;
+	margin: 0 auto;
+	padding: 10px 20px;
+}
+
+/* Metadata table */
+table {
+	border: 1px #ccc solid;
+	overflow: auto;
+	width: 100%;
+	margin: .1em auto .75em;
+	padding: 0.5em;
+}
+
+
+li {
+list-style-type: none;
+padding: 2 0 0 10;
+}

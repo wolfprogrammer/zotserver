@@ -469,18 +469,15 @@ class Zotero():
         conn.close()
         return rows
 
-
-
-
     def get_item_data(self, itemid):
 
         sql = """
 
         SELECT  fields.fieldName , itemDataValues.value
 
-        FROM      itemData, itemDataValues  , fields
+        FROM   itemData, itemDataValues  , fields
 
-        WHERE   itemData.valueID =  itemDataValues.valueID AND
+        WHERE  itemData.valueID =  itemDataValues.valueID AND
             fields.fieldID = itemData.fieldID  	   AND
             itemData.itemID = ?
 
@@ -490,7 +487,7 @@ class Zotero():
         rows = query.fetchall()
         conn.close()
 
-        return rows
+        return dict(rows)
 
     def list_item_data(self, itemid):
 
