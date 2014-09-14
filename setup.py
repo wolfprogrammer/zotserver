@@ -44,7 +44,7 @@ CLASSIFIERS = [
 
 DATA_FILES = [
 #   ('<directory',  [<list of files]  ),
-    ('/etc/init.d', ['scripts/zotserver']) # Daemon Directory
+    ('/etc/init.d', ['zotserver/scripts/zotserver']) # Daemon Directory
 
 ]
 

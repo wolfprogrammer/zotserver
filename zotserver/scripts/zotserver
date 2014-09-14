@@ -9,8 +9,10 @@
 
 #---------- S E T T I N G S ---------------------------#
 
+# Call module __main__.py file
+DAEMON_CMD="python -m zotserver"
+
 # Absolute path to installation directory
-ZOTSERVER_HOME=/home/tux/PycharmProjects/zotserver
 PIDFILE="/tmp/zotserver.pid"
 SERVERPORT=8080
 
@@ -25,15 +27,8 @@ _base="$(dirname $_script)"
 #echo "Script Directory "$_base
 
 # Default directory
-BROWSER=firefox
 LOCKFILE=/tmp/zotserver.lock
 
-#
-# Assume that the zotserver.py is in the
-# same directory of this script
-#
-cd $ZOTSERVER_HOME
-STARTCMD="python  zotserver.py"
 
 #exit 0
 
@@ -45,7 +40,7 @@ start() {
         exit 1
     else
         echo "Starting Python Zotero Server on port 8080"
-        nohup $STARTCMD  >/dev/null 2>&1 &
+        nohup $DAEMON_CMD  >/dev/null 2>&1 &
         touch $LOCKFILE
         exit 0
     fi
