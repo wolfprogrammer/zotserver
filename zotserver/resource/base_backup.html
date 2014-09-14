@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html >
+    <head>
+        <!--<link rel="stylesheet" type="text/css" href="resource/base.ccs">-->
+
+        <title> ZOTERO SERVER </title>
+
+        <META HTTP-EQUIV="Pragma" CONTENT="no-cache"><META HTTP-EQUIV="Expires" CONTENT="-1"> 
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <style type="text/css">
+
+
+        body {
+            background-color: white;
+        }
+
+        h1 {color:black;}
+        h2 {color:black;}
+        p {color:blue;}
+
+
+        a:link { color:#33348e; text-decoration: none; }
+        a:visited { color:blue; text-decoration: none; }
+        a:hover { color:#33348e; text-decoration: none; }
+        a:active { color:#7476b4; text-decoration: underline; }
+
+        A:hover {
+             COLOR: green /*The color of the mouseover or 'hover' link*/;
+             background-color: yellow;
+        }
+
+        @media (max-width: 699px) and (min-width: 520px) {
+        @-viewport {
+            width: 640px;
+          }
+        }
+        @viewport {
+            width: 980px;
+            min-zoom: 0.25;
+            max-zoom: 5;
+            orientation: landscape;
+        }
+
+        img {
+        max-width:64px;
+        max-height:64px;
+        width:auto;
+        height:auto;
+        }
+
+
+
+         </style>
+
+
+        <!--Force Window Reload-->
+        <SCRIPT LANGUAGE=JavaScript>
+
+        function now(){
+            window.location.reload(true);
+        }
+        </SCRIPT>
+
+
+    </head>
+
+    <body>
+    
+    <h1> ZOTSERVER </h1>
+
+
+    <!--<h2><a href="/{{backlink}}">{{backlink}}</a></h2>-->
+
+
+    <!--<img src="/coverid/95" width="120" height="90" alt="HTML Dog">-->
+
+
+    &bull; <a href="/index">Index</a><br />
+    &bull; <a href="/items">Items</a><br />
+    &bull; <a href="/tags">Tags</a><br />
+    <!--*<a href="/search">Search</a><br />-->
+    <br>
+    &bull; <a href="/collections">Browser Collections</a><br />
+    &bull; <a href="/all_collections">Browser All Collections</a><br />
+    <br>
+    &bull; <a href="/status">Server Status</a><br />
+    &bull; <a href="/help">Help</a>
+    &bull; <a href="https://github.com/wolfprogrammer/zotserver/blob/master/README.md">Docs</a>
+
+    <!--<hr size=10 width=40%>-->
+    <!--<hr width=35% color="black" align="left" >-->
+    <br /><br />
+
+    <h3>{{subtitle}}</h3>
+    {{!content}}
+    
+
+    </body>
+
+</html>    

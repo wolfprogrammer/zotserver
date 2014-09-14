@@ -199,9 +199,9 @@ _row_tpl = \
 
 _image_row_tpl = \
 """
-<td>
-{image}
-</td>
+<tr>
+<td>{image}</td>
+</tr>
 """
 
 _attachment_row = \
