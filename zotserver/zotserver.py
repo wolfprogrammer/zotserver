@@ -11,6 +11,11 @@ directories and database location.
 2 - Change zotserver.conf paths to storage location of zotero files and datbase
 3 - Run ./zotserver.py
 
+Render PDF in Browser
+http://localhost:8080/resource/pdfjs/web/viewer.html?file=http://localhost:8080/attachment/30
+
+
+/resource/pdfjs/web/viewer.html?file=/attachment/30
 
 """
 import os
@@ -270,7 +275,10 @@ def thumbnail_html(itemid):
     image_html = ""
     if picture is not None:
         if picture is not None:
-            src="/coverid/%s" % itemid
+            #src="/coverid/%s" % itemid
+
+            #/resource/pdfjs/web/viewer.html?file=/attachment/30
+            src = "/resource/pdfjs/web/viewer.html?file=/attachment/%s" % itemid
             image_html = py2html.html_image(src="/coverid/%s" % itemid,
                                             width=240, height=180, href=src)
             #image_html = "".join(['<br />', image_html, '<br />'])
@@ -559,14 +567,15 @@ def route_fileid(itemid):
 #         return "Error: File don't exist on server."
 
 
-@app.route('/resource/<filename>')
-def route_resource(filename):
+#@app.route('/resource/<filename>')
+@app.route('/resource/<path:path>')
+def route_resource(path):
     """
     Get the files inside template directory
     :param path:
     :return:
     """
-    #filename = path
+    filename = path
 
     this_dir_ = this_dir()
     _path =  os.path.join(this_dir_, 'resource')

@@ -1,93 +1,92 @@
 <html>
 <head>
-  <title>ZOTSERVER</title>
-   <META HTTP-EQUIV="Pragma" CONTENT="no-cache"><META HTTP-EQUIV="Expires" CONTENT="-1">
-   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>ZOTSERVER</title>
+<meta charset="UTF-8">
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache"><META HTTP-EQUIV="Expires" CONTENT="-1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-    <!--<link rel="stylesheet" type="text/css" href="resource/layout.css"/>-->
-    <!--<link rel="stylesheet" type="text/css" href="/resource/theme.css"/>-->
-
-
-    <style>
-    .menu {
-          float:left;
-          width:20%;
-          height:80%;
-
-        }
-        .mainContent {
-          float:left;
-          width:75%;
-          height:80%;
-        }
-
-        h1 {color:black;}
-        <!--h2 {color:black;}-->
-        p {color:blue;}
+<!--<link rel="stylesheet" type="text/css" href="resource/layout.css"/>-->
+<!--<link rel="stylesheet" type="text/css" href="/resource/theme.css"/>-->
 
 
-        a:link { color:#33348e; text-decoration: none; }
-        a:visited { color:blue; text-decoration: none; }
-        a:hover { color:#33348e; text-decoration: none; }
-        a:active { color:#7476b4; text-decoration: underline; }
+<style>
+.menu {
+  float:left;
+  width:20%;
+  height:80%;
 
-        A:hover {
-             COLOR: green /*The color of the mouseover or 'hover' link*/;
-             background-color: yellow;
-        }
+}
+.mainContent {
+  float:left;
+  width:75%;
+  height:80%;
+}
 
-        img {
-        max-width:64px;
-        max-height:64px;
-        width:auto;
-        height:auto;
-        }
+h1 {color:black;}
+<!--h2 {color:black;}-->
+p {color:blue;}
 
-    </style>
+
+a:link { color:#33348e; text-decoration: none; }
+a:visited { color:blue; text-decoration: none; }
+a:hover { color:#33348e; text-decoration: none; }
+a:active { color:#7476b4; text-decoration: underline; }
+
+A:hover {
+     COLOR: green /*The color of the mouseover or 'hover' link*/;
+     background-color: yellow;
+}
+
+img {
+max-width:64px;
+max-height:64px;
+width:auto;
+height:auto;
+}
+
+</style>
 
     <link rel="stylesheet" type="text/css" href="/resource/detail.css"/>
 
 
 </head>
 <body>
-  <object class="menu">
+<object class="menu">
 
-    <h1> ZOTSERVER </h1>
+<h1> ZOTSERVER </h1>
 
-    <img src="/resource/favicon.png" width="120" height="90">
-    <br />
+<img src="/resource/favicon.png" width="120" height="90">
+<br />
 
-    <br />&bull; <a href="/index">Index</a>
-    <br />&bull; <a href="/items">Items</a>
-    <br />&bull; <a href="/tags">Tags</a>
-    <!--*<a href="/search">Search</a><br />-->
+<br />&bull; <a href="/index">Index</a>
+<br />&bull; <a href="/items">Items</a>
+<br />&bull; <a href="/tags">Tags</a>
+<!--*<a href="/search">Search</a><br />-->
 
-    <br />&bull; <a href="/collections">Browser Collections</a>
-    <br />&bull; <a href="/all_collections">Browser All Collections</a>
+<br />&bull; <a href="/collections">Browser Collections</a>
+<br />&bull; <a href="/all_collections">Browser All Collections</a>
 
-    <br />
-    <br />&bull; <a href="/status">Server Status</a>
-    <br />&bull; <a href="/help">Help</a>
-    <br />&bull; <a href="https://github.com/wolfprogrammer/zotserver/blob/master/README.md" target="mainContent">Docs</a>
+<br />
+<br />&bull; <a href="/status">Server Status</a>
+<br />&bull; <a href="https://github.com/wolfprogrammer/zotserver/blob/master/README.md" target="mainContent">Docs</a>
+<br />
+<br />
+<form action="/search" method="GET">
+Search Library <br /><input name="q" type="text"  autofocus />
+<input value="Search" type="submit" />
+</form>
+<br />
+<form action="/updatelib" method="post">
+<input value="Update Library" type="submit" />
+</form>
 
-    <br />
-    <br />
-    <form action="/search" method="GET">
-    Search Library <br /><input name="q" type="text" value="dll" autofocus />
-    <input value="Search" type="submit" />
-    </form>
-    <br />
-    <form action="/updatelib" method="post">
-    <input value="Update Library" type="submit" />
-    </form>
+</object>
 
-  </object>
+<object class="mainContent">
 
-  <object class="mainContent">
+<h1>{{subtitle}}</h1>
+{{!content}}
 
-    <h1>{{subtitle}}</h1>
-    {{!content}}
-
-  </object>
+</object>
 </body>
 </html>

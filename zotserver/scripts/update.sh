@@ -29,7 +29,7 @@ echo $STORAGE_LOCATION
 #ls $STORAGE_LOCATION
 mkdir -p  storage
 # Copy zotero data to the server
-rsync -avP --delete $STORAGE_LOCATION/ $ZOTSERVER_DATA/storage
+rsync --inplace -avP  $STORAGE_LOCATION/ $ZOTSERVER_DATA/storage
 # Copy zotero database
 rsync -avP $ZOTERO_LOCATION/zotero.sqlite  $ZOTSERVER_DATA
 

@@ -7,8 +7,6 @@ PACKAGE=zotserver
 PYTHON_VERSION=2.7
 SCRIPTS=/etc/init.d/zotserver
 
-
-
 SITE_PACKAGE=/usr/local/lib/python$PYTHON_VERSION/dist-packages
 
 PACKAGE_DIR=$SITE_PACKAGE/$PACKAGE
